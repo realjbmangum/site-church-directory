@@ -1,0 +1,29 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { getDirectory } from '../../lib/load';
+
+const directory = getDirectory();
+---
+
+<Layout
+  title="Denominations"
+  description="Denomination families and specific bodies used in the Charlotte church directory."
+>
+  <PageHeader
+    title="Denominations"
+    lede="Family is the broad tradition. Body is the specific group, such as a convention, diocese, or association. Families with no Charlotte listing are still here so the list stays complete."
+    crumbs={[{ label: 'Denominations' }]}
+  />
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid sm:grid-cols-2 gap-4">
+    {directory.families.map((family) => (
+      <a class="card p-5 block hover:bg-cream-50" href={`/denominations/${family.slug}`}>
+        <div class="flex items-baseline justify-between gap-3">
+          <h2 class="font-serif text-2xl">{family.name}</h2>
+          <span class="text-sm text-gray-500">{family.churchCount}</span>
+        </div>
+        <p class="mt-2 text-gray-600">{family.blurb}</p>
+      </a>
+    ))}
+  </div>
+</Layout>

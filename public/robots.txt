@@ -1,0 +1,7 @@
+# Placeholder host. Update this file when the live domain is chosen.
+# TODO(brian): keep the Sitemap URL on the same host as astro.config.mjs `site`.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://findachurch.directory/sitemap-index.xml

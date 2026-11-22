@@ -1,0 +1,8 @@
+{
+  "name": "church-directory-email-inbox",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "postal-mime": "^2.4.1"
+  }
+}

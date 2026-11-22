@@ -1,0 +1,6 @@
+{
+  "comment": "Staged only. Do not apply this rule until the domain is attached and the worker is deployed by hand.",
+  "custom_address": "TODO: info@the-domain-brian-chooses",
+  "action": "send_to_worker",
+  "worker": "church-directory-email-inbox"
+}

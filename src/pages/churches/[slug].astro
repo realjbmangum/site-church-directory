@@ -1,0 +1,195 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getDirectory, proofNote, serviceLines } from '../../lib/load';
+
+export function getStaticPaths() {
+  const directory = getDirectory();
+  return directory.churches
+    .filter((church) => church.published)
+    .map((church) => ({ params: { slug: church.slug }, props: { church } }));
+}
+
+const { church } = Astro.props;
+const lines = serviceLines(church);
+const place = [church.city, church.state, church.postalCode].filter(Boolean).join(', ');
+const addressLine = [church.streetAddress, place].filter(Boolean).join(', ');
+const phoneHref = church.phone ? `tel:${church.phone.replace(/[^\d+]/g, '')}` : '';
+const hasPoint = church.latitude != null && church.longitude != null;
+const directions = hasPoint
+  ? `https://www.openstreetmap.org/directions?to=${church.latitude}%2C${church.longitude}`
+  : `https://www.openstreetmap.org/search?query=${encodeURIComponent(addressLine || church.name)}`;
+const pageUrl = new URL(`/churches/${church.slug}`, Astro.site).href;
+const extraLanguages = church.languages.filter((language) => language.toLowerCase() !== 'english');
+
+const postal = {
+  '@type': 'PostalAddress',
+  streetAddress: church.streetAddress || undefined,
+  addressLocality: church.city || undefined,
+  addressRegion: church.state || undefined,
+  postalCode: church.postalCode || undefined,
+};
+
+const churchLd: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': ['Church', 'PlaceOfWorship'],
+  name: church.name,
+  url: pageUrl,
+  address: postal,
+  telephone: church.phone || undefined,
+  sameAs: church.website || undefined,
+};
+if (hasPoint) {
+  churchLd.geo = {
+    '@type': 'GeoCoordinates',
+    latitude: church.latitude,
+    longitude: church.longitude,
+  };
+}
+if (church.familyName) {
+  churchLd.additionalProperty = {
+    '@type': 'PropertyValue',
+    name: 'Denomination',
+    value: `${church.familyName}: ${church.bodyName}`,
+  };
+}
+
+const crumbsLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: new URL('/', Astro.site).href },
+    { '@type': 'ListItem', position: 2, name: 'Churches', item: new URL('/churches', Astro.site).href },
+    { '@type': 'ListItem', position: 3, name: church.name, item: pageUrl },
+  ],
+};
+
+const description = [
+  church.name,
+  place ? `in ${place}` : 'in the Charlotte area',
+  `is listed as ${church.familyName}.`,
+  church.earliestSundayTime ? `Earliest Sunday service: ${church.earliestSundayTime}.` : '',
+  proofNote(church),
+].filter(Boolean).join(' ');
+---
+
+<Layout title={`${church.name}${church.city ? `, ${church.city}` : ''}`} description={description} jsonLd={[churchLd, crumbsLd]}>
+  <nav aria-label="Breadcrumb" class="bg-cream-50 border-b border-cream-300">
+    <ol class="max-w-6xl mx-auto px-4 sm:px-6 py-3 text-sm text-gray-600 flex flex-wrap gap-x-2 gap-y-1">
+      <li><a class="hover:text-primary-700" href="/">Home</a></li>
+      <li aria-hidden="true">/</li>
+      <li><a class="hover:text-primary-700" href="/churches">Churches</a></li>
+      {church.citySlug && (
+        <>
+          <li aria-hidden="true">/</li>
+          <li><a class="hover:text-primary-700" href={`/cities/${church.citySlug}`}>{church.city}</a></li>
+        </>
+      )}
+      <li aria-hidden="true">/</li>
+      <li class="text-gray-800">{church.name}</li>
+    </ol>
+  </nav>
+
+  <article class="max-w-6xl mx-auto px-4 sm:px-6 py-8 grid lg:grid-cols-3 gap-8">
+    <div class="lg:col-span-2 space-y-6">
+      <header>
+        <div class="flex flex-wrap gap-2 mb-3">
+          <a class="badge" href={`/denominations/${church.familySlug}`}>{church.familyName}</a>
+          <a class="badge" href={`/denominations/${church.familySlug}/${church.bodySlug}`}>{church.bodyName}</a>
+          {church.historicallyBlack && <span class="badge">Historically Black tradition</span>}
+        </div>
+        <h1 class="font-serif text-4xl text-gray-900">{church.name}</h1>
+        {church.campusName && <p class="mt-2 text-gray-600">Campus: {church.campusName}</p>}
+        {church.historicallyBlack && (
+          <p class="mt-3 text-sm text-gray-600">This tag is about the denomination body. It is not a description of who attends.</p>
+        )}
+      </header>
+
+      <section class="card p-6">
+        <h2 class="font-serif text-2xl">Service times</h2>
+        <p class="mt-1 text-sm text-gray-600">Shown as the church published them.</p>
+        <ul class="mt-4 space-y-2">
+          {lines.map((line) => (
+            <li class="bg-cream-50 border border-cream-300 rounded-xl px-4 py-3 text-gray-800">{line}</li>
+          ))}
+        </ul>
+        {church.earliestSundayTime && (
+          <p class="mt-4 text-sm text-gray-600">Earliest Sunday time we could read: {church.earliestSundayTime}.</p>
+        )}
+      </section>
+
+      <section class="card p-6">
+        <h2 class="font-serif text-2xl">Languages</h2>
+        <p class="mt-3 text-gray-800">{church.languages.join(', ') || 'Not listed'}</p>
+        {extraLanguages.length > 0 && (
+          <p class="mt-2 text-sm text-gray-600">Services besides English: {extraLanguages.join(', ')}.</p>
+        )}
+      </section>
+
+      <section class="callout">
+        <h2 class="font-serif text-2xl">Last verified</h2>
+        <p class="mt-2 text-gray-700">{proofNote(church)}</p>
+        {church.proofQuote && (
+          <blockquote class="mt-4 bg-white border border-cream-300 rounded-xl p-4 text-gray-800">
+            <p>{church.proofQuote}</p>
+          </blockquote>
+        )}
+        {church.proofUrl && (
+          <p class="mt-4">
+            <a class="text-primary-700 hover:text-primary-800 font-medium" href={church.proofUrl} rel="noopener noreferrer">Read this on the church website</a>
+          </p>
+        )}
+        {church.httpNote && /redirect/i.test(church.httpNote) && (
+          <p class="mt-2 text-sm text-gray-600">The website redirected when we checked it.</p>
+        )}
+        {church.denominationEvidence && (
+          <p class="mt-2 text-sm text-gray-600">Denomination source: {church.denominationEvidence}.</p>
+        )}
+      </section>
+    </div>
+
+    <aside class="space-y-4">
+      <div class="card p-6 lg:sticky lg:top-24">
+        <h2 class="font-serif text-xl">Visit</h2>
+        <div class="mt-4 space-y-3 text-gray-800">
+          {addressLine && <p>{church.streetAddress}<br />{place}</p>}
+          {!addressLine && <p>Street address not listed yet.</p>}
+          {church.phone && <p><a class="hover:text-primary-700" href={phoneHref}>{church.phone}</a></p>}
+          {church.website && (
+            <p><a class="hover:text-primary-700 break-all" href={church.website} rel="noopener noreferrer">Church website</a></p>
+          )}
+        </div>
+        {hasPoint && (
+          <div class="map-frame mt-4 h-56 rounded-xl overflow-hidden border border-cream-300" id="detail-map" data-lat={church.latitude} data-lng={church.longitude} data-name={church.name}></div>
+        )}
+        <div class="mt-4 grid gap-2">
+          <a class="btn-primary" href={directions} rel="noopener noreferrer">Directions</a>
+          <a class="btn-secondary" href={`/suggest-edit?church=${church.slug}`}>Suggest an edit</a>
+        </div>
+      </div>
+    </aside>
+  </article>
+</Layout>
+
+<script>
+  import L from 'leaflet';
+  import 'leaflet/dist/leaflet.css';
+
+  const frame = document.querySelector<HTMLElement>('#detail-map');
+  if (frame) {
+    const lat = Number(frame.dataset.lat);
+    const lng = Number(frame.dataset.lng);
+    const map = L.map(frame, { scrollWheelZoom: false }).setView([lat, lng], 15);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    }).addTo(map);
+    L.circleMarker([lat, lng], {
+      radius: 9,
+      color: '#9a4c33',
+      weight: 2,
+      fillColor: '#c97652',
+      fillOpacity: 0.95,
+    }).addTo(map);
+    requestAnimationFrame(() => map.invalidateSize());
+  }
+</script>

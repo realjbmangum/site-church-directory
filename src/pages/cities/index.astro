@@ -1,0 +1,23 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import { getDirectory } from '../../lib/load';
+
+const cities = getDirectory().cities;
+---
+
+<Layout title="Cities" description="Cities and towns in the Charlotte church directory pilot.">
+  <PageHeader
+    title="Cities"
+    lede="Towns with at least one checked church in this pilot."
+    crumbs={[{ label: 'Cities' }]}
+  />
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {cities.map((city) => (
+      <a class="card p-5 block hover:bg-cream-50" href={`/cities/${city.slug}`}>
+        <h2 class="font-serif text-2xl">{city.name}</h2>
+        <p class="mt-1 text-gray-600">{city.churchCount} {city.churchCount === 1 ? 'church' : 'churches'}</p>
+      </a>
+    ))}
+  </div>
+</Layout>

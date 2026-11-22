@@ -1,0 +1,54 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import PageHeader from '../../../components/PageHeader.astro';
+import ChurchCard from '../../../components/ChurchCard.astro';
+import { getDirectory } from '../../../lib/load';
+
+export function getStaticPaths() {
+  const directory = getDirectory();
+  return directory.bodies
+    .filter((body) => body.churchCount > 0)
+    .map((body) => ({
+      params: { family: body.familySlug, body: body.slug },
+      props: { familySlug: body.familySlug, bodySlug: body.slug },
+    }));
+}
+
+const { familySlug, bodySlug } = Astro.props;
+const directory = getDirectory();
+const body = directory.bodies.find((item) => item.slug === bodySlug && item.familySlug === familySlug);
+if (!body) throw new Error(`Missing body ${familySlug}/${bodySlug}`);
+const churches = directory.churches.filter((church) => church.published && church.bodySlug === body.slug);
+const pageUrl = new URL(`/denominations/${body.familySlug}/${body.slug}`, Astro.site).href;
+---
+
+<Layout
+  title={body.name}
+  description={`${body.name} churches in the Charlotte pilot. ${churches.length} listings.`}
+  jsonLd={{
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: body.name,
+    url: pageUrl,
+  }}
+>
+  <PageHeader
+    title={body.name}
+    lede={`${churches.length} ${churches.length === 1 ? 'church' : 'churches'} in the Charlotte pilot.`}
+    crumbs={[
+      { href: '/denominations', label: 'Denominations' },
+      { href: `/denominations/${body.familySlug}`, label: body.familyName },
+      { label: body.name },
+    ]}
+  />
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+    {body.historicallyBlack && (
+      <div class="callout">
+        <p>Our taxonomy marks this body as a historically Black tradition. The tag is about the denomination, not a guess about who attends.</p>
+      </div>
+    )}
+    <div class="grid md:grid-cols-2 gap-4">
+      {churches.map((church) => <ChurchCard church={church} />)}
+    </div>
+  </div>
+</Layout>

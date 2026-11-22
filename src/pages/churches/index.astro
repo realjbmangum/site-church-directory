@@ -1,144 +1,129 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import PageHeader from '../../components/PageHeader.astro';
 import ChurchCard from '../../components/ChurchCard.astro';
-import churches from '../../data/sample-churches.json';
+import { getDirectory, SERVICE_BUCKETS, serviceBucket } from '../../lib/load';
 
-const denominations = [...new Set(churches.map(c => c.denomination))].sort();
-const cities = [...new Set(churches.map(c => c.city))].sort();
+const directory = getDirectory();
+const churches = directory.churches.filter((church) => church.published);
+const families = directory.families.filter((family) => family.churchCount > 0);
+const languages = [...new Set(churches.flatMap((church) => church.languages))].sort();
 ---
 
-<Layout
-  title="Browse Churches"
-  description="Find local churches near you. Search by location, denomination, service times, and programs."
->
-  <!-- Header -->
-  <section class="bg-white border-b border-cream-200 py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h1 class="text-3xl font-serif font-bold text-gray-900 mb-2">Browse Churches</h1>
-      <p class="text-gray-600">Find the perfect church community for you and your family</p>
-    </div>
-  </section>
-
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="lg:grid lg:grid-cols-4 lg:gap-8">
-      <!-- Filters Sidebar -->
-      <aside class="lg:col-span-1 mb-8 lg:mb-0">
-        <div class="bg-white rounded-xl border border-cream-200 p-6 sticky top-24">
-          <h2 class="font-serif text-lg font-semibold text-gray-900 mb-4">Filters</h2>
-
-          <!-- Location Filter -->
-          <div class="mb-6">
-            <label for="filter-location" class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-            <input
-              type="text"
-              id="filter-location"
-              placeholder="City or ZIP"
-              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
-            />
-          </div>
-
-          <!-- Denomination Filter -->
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Denomination</label>
-            <div class="space-y-2 max-h-48 overflow-y-auto">
-              {denominations.map(denom => (
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" name="denomination" value={denom.toLowerCase()} class="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                  <span class="text-sm text-gray-600">{denom}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <!-- Service Day Filter -->
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Service Days</label>
-            <div class="space-y-2">
-              {['Sunday', 'Saturday', 'Wednesday'].map(day => (
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" name="day" value={day.toLowerCase()} class="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                  <span class="text-sm text-gray-600">{day}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <!-- Programs Filter -->
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Programs</label>
-            <div class="space-y-2">
-              {['Children\'s Ministry', 'Youth Group', 'Small Groups', 'Community Outreach'].map(program => (
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" name="program" value={program.toLowerCase().replace(/['\s]/g, '-')} class="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                  <span class="text-sm text-gray-600">{program}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <!-- Accessibility Filter -->
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Accessibility</label>
-            <div class="space-y-2">
-              {['Wheelchair Accessible', 'Hearing Loop', 'Nursery Available'].map(feature => (
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" name="accessibility" value={feature.toLowerCase().replace(/\s/g, '-')} class="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                  <span class="text-sm text-gray-600">{feature}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <button class="w-full btn-primary text-sm">Apply Filters</button>
-        </div>
-      </aside>
-
-      <!-- Results -->
-      <div class="lg:col-span-3">
-        <!-- Results Header -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <p class="text-gray-600">
-            Showing <strong class="text-gray-900">{churches.length}</strong> churches
-          </p>
-          <div class="flex items-center gap-3">
-            <label for="sort" class="text-sm text-gray-600">Sort by:</label>
-            <select id="sort" class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white">
-              <option value="rating">Highest Rated</option>
-              <option value="reviews">Most Reviews</option>
-              <option value="name">Name (A-Z)</option>
-              <option value="distance">Distance</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Church Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {churches.map(church => (
-            <ChurchCard {...church} />
+<Layout title="Churches" description="All churches in the Charlotte pilot, with denomination, city, language, and service time.">
+  <PageHeader
+    title="Churches"
+    lede={`${churches.length} churches in the Charlotte pilot. Filters hide cards on this page. The map uses the same choices.`}
+    crumbs={[{ label: 'Churches' }]}
+  />
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+    <form id="church-filters" class="card p-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6 mb-6">
+      <label class="block text-sm lg:col-span-2">
+        <span class="text-gray-700">City or ZIP</span>
+        <input name="place" class="field mt-1" placeholder="Matthews or 28105" />
+      </label>
+      <label class="block text-sm">
+        <span class="text-gray-700">Family</span>
+        <select name="family" class="field mt-1">
+          <option value="">Any</option>
+          {families.map((family) => <option value={family.slug}>{family.name}</option>)}
+        </select>
+      </label>
+      <label class="block text-sm">
+        <span class="text-gray-700">Body</span>
+        <select name="body" class="field mt-1">
+          <option value="">Any</option>
+          {directory.bodies.filter((body) => body.churchCount > 0).map((body) => (
+            <option value={body.slug} data-family={body.familySlug}>{body.name}</option>
           ))}
+        </select>
+      </label>
+      <label class="block text-sm">
+        <span class="text-gray-700">Language</span>
+        <select name="language" class="field mt-1">
+          <option value="">Any</option>
+          {languages.map((language) => <option value={language}>{language}</option>)}
+        </select>
+      </label>
+      <label class="block text-sm">
+        <span class="text-gray-700">Service time</span>
+        <select name="time" class="field mt-1">
+          <option value="">Any</option>
+          {SERVICE_BUCKETS.filter((bucket) => bucket.id !== 'unknown').map((bucket) => (
+            <option value={bucket.id}>{bucket.label}</option>
+          ))}
+          <option value="saturday">Saturday service</option>
+        </select>
+      </label>
+    </form>
+    <p id="church-count" class="text-sm text-gray-600 mb-4">{churches.length} churches</p>
+    <div id="church-grid" class="grid md:grid-cols-2 gap-4">
+      {churches.map((church) => (
+        <div
+          class="church-item"
+          data-family={church.familySlug}
+          data-body={church.bodySlug}
+          data-city={church.city || ''}
+          data-zip={church.postalCode || ''}
+          data-languages={church.languages.join('|')}
+          data-bucket={serviceBucket(church)}
+          data-saturday={/saturday/i.test(church.serviceTimesText) ? '1' : '0'}
+        >
+          <ChurchCard church={church} />
         </div>
-
-        <!-- Pagination -->
-        <div class="flex justify-center mt-10">
-          <nav class="flex items-center gap-1">
-            <button class="px-3 py-2 text-gray-400 cursor-not-allowed">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <button class="px-4 py-2 bg-primary-600 text-white rounded-lg font-medium">1</button>
-            <button class="px-4 py-2 text-gray-600 hover:bg-cream-100 rounded-lg">2</button>
-            <button class="px-4 py-2 text-gray-600 hover:bg-cream-100 rounded-lg">3</button>
-            <span class="px-2 text-gray-400">...</span>
-            <button class="px-4 py-2 text-gray-600 hover:bg-cream-100 rounded-lg">12</button>
-            <button class="px-3 py-2 text-gray-600 hover:text-primary-600">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </nav>
-        </div>
-      </div>
+      ))}
     </div>
   </div>
 </Layout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('#church-filters');
+  const items = [...document.querySelectorAll<HTMLElement>('.church-item')];
+  const count = document.querySelector('#church-count');
+  const bodySelect = form?.querySelector<HTMLSelectElement>('[name="body"]');
+  const familySelect = form?.querySelector<HTMLSelectElement>('[name="family"]');
+
+  function apply() {
+    if (!form) return;
+    const data = new FormData(form);
+    const family = String(data.get('family') || '');
+    const body = String(data.get('body') || '');
+    const language = String(data.get('language') || '').toLowerCase();
+    const place = String(data.get('place') || '').trim().toLowerCase();
+    const time = String(data.get('time') || '');
+    let visible = 0;
+    for (const item of items) {
+      const languages = (item.dataset.languages || '').toLowerCase().split('|');
+      const haystack = `${item.dataset.city || ''} ${item.dataset.zip || ''}`.toLowerCase();
+      let show = true;
+      if (family && item.dataset.family !== family) show = false;
+      if (body && item.dataset.body !== body) show = false;
+      if (language && !languages.includes(language)) show = false;
+      if (place && !haystack.includes(place)) show = false;
+      if (time === 'saturday' && item.dataset.saturday !== '1') show = false;
+      if (time && time !== 'saturday' && item.dataset.bucket !== time) show = false;
+      item.hidden = !show;
+      if (show) visible += 1;
+    }
+    if (count) count.textContent = `${visible} ${visible === 1 ? 'church' : 'churches'}`;
+  }
+
+  function syncBodies() {
+    if (!bodySelect || !familySelect) return;
+    const family = familySelect.value;
+    for (const option of bodySelect.options) {
+      if (!option.value) continue;
+      option.hidden = Boolean(family) && option.dataset.family !== family;
+    }
+    const selected = bodySelect.selectedOptions[0];
+    if (selected && selected.hidden) bodySelect.value = '';
+  }
+
+  familySelect?.addEventListener('change', () => {
+    syncBodies();
+    apply();
+  });
+  form?.addEventListener('input', apply);
+  form?.addEventListener('submit', (event) => event.preventDefault());
+  syncBodies();
+</script>

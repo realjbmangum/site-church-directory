@@ -1,0 +1,41 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { getDirectory, formatLongDate } from '../lib/load';
+
+const directory = getDirectory();
+const checked = formatLongDate(directory.checkedOn);
+---
+
+<Layout
+  title="How listings work"
+  description="How the Charlotte church directory checks listings, and what is not collected yet."
+>
+  <PageHeader
+    title="How listings work"
+    lede="This is a Charlotte pilot. The public pages are built from churches that were checked, plus any submission a reviewer has approved."
+    crumbs={[{ label: 'How listings work' }]}
+  />
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-10 space-y-6 text-gray-700">
+    <section class="callout">
+      <h2 class="font-serif text-2xl text-gray-900">What "checked" means</h2>
+      <p class="mt-2">For the seed set, someone opened the church's own website, copied a short quote (usually the service time), saved the link, and recorded the date. The latest check in this file is {checked || 'recorded on the listing'}.</p>
+    </section>
+    <section class="card p-5">
+      <h2 class="font-serif text-2xl">What you can filter on</h2>
+      <p class="mt-2">Denomination family, the specific body inside that family, language, city or ZIP, and service time. Those are the details the seed file actually holds.</p>
+    </section>
+    <section class="card p-5">
+      <h2 class="font-serif text-2xl">What is not collected yet</h2>
+      <p class="mt-2">Kids and youth, worship style, theology, young adults, LGBTQ stance, and outreach have a place in the database and are empty. They will not show up as filters until a listing says so in its own words and a reviewer approves it.</p>
+    </section>
+    <section class="card p-5">
+      <h2 class="font-serif text-2xl">Submissions and edits</h2>
+      <p class="mt-2">The public forms only create a review row. Approving that row is what creates or updates a church. Rejecting it leaves the public list alone. Churches are not deleted. A closed church stays in the database and can be hidden from the public pages.</p>
+    </section>
+    <p>
+      <a class="btn-primary" href="/submit">Submit a church</a>
+      <a class="btn-secondary ml-2" href="/suggest-edit">Suggest an edit</a>
+    </p>
+  </div>
+</Layout>

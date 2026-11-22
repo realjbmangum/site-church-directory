@@ -1,0 +1,8 @@
+# Copy to .dev.vars for local `wrangler pages dev` only.
+# Do not set ADMIN_DEV_BYPASS on the Cloudflare project. Production and preview
+# must fail closed until Cloudflare Access is configured.
+ADMIN_DEV_BYPASS=1
+
+# Optional. The Access team domain, for example yourteam.cloudflareaccess.com.
+# Leave unset locally and use the bypass above.
+# CF_ACCESS_TEAM_DOMAIN=

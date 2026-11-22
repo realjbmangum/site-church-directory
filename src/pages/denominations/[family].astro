@@ -1,0 +1,66 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import ChurchCard from '../../components/ChurchCard.astro';
+import { getDirectory } from '../../lib/load';
+
+export function getStaticPaths() {
+  const directory = getDirectory();
+  return directory.families.map((family) => ({
+    params: { family: family.slug },
+    props: { familySlug: family.slug },
+  }));
+}
+
+const { familySlug } = Astro.props;
+const directory = getDirectory();
+const family = directory.families.find((item) => item.slug === familySlug);
+if (!family) throw new Error(`Missing family ${familySlug}`);
+const churches = directory.churches.filter((church) => church.published && church.familySlug === family.slug);
+const pageUrl = new URL(`/denominations/${family.slug}`, Astro.site).href;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: `${family.name} churches in Charlotte`,
+  url: pageUrl,
+  description: family.blurb,
+};
+---
+
+<Layout title={`${family.name} churches`} description={`${family.blurb} ${churches.length} in the Charlotte pilot.`} jsonLd={jsonLd}>
+  <PageHeader
+    title={family.name}
+    lede={family.blurb}
+    crumbs={[{ href: '/denominations', label: 'Denominations' }, { label: family.name }]}
+  />
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-10">
+    <section>
+      <h2 class="font-serif text-2xl mb-4">Bodies in this family</h2>
+      <ul class="grid sm:grid-cols-2 gap-3">
+        {family.bodies.map((body) => (
+          <li class="card p-4">
+            {body.churchCount > 0 ? (
+              <a class="font-medium text-primary-800 hover:text-primary-900" href={`/denominations/${family.slug}/${body.slug}`}>{body.name}</a>
+            ) : (
+              <p class="font-medium text-gray-900">{body.name}</p>
+            )}
+            <p class="mt-1 text-sm text-gray-600">
+              {body.churchCount} {body.churchCount === 1 ? 'church' : 'churches'} in this pilot
+              {body.historicallyBlack ? ' · Historically Black tradition' : ''}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </section>
+    <section>
+      <h2 class="font-serif text-2xl mb-4">Churches</h2>
+      {churches.length === 0 ? (
+        <p class="text-gray-600">None of the churches in this Charlotte pilot are listed in this family yet.</p>
+      ) : (
+        <div class="grid md:grid-cols-2 gap-4">
+          {churches.map((church) => <ChurchCard church={church} />)}
+        </div>
+      )}
+    </section>
+  </div>
+</Layout>

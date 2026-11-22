@@ -1,0 +1,100 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { getDirectory } from '../lib/load';
+
+const families = getDirectory().families;
+const sent = Astro.url.searchParams.get('sent') === '1';
+const error = Astro.url.searchParams.get('error') === '1';
+---
+
+<Layout title="Submit a church" description="Send a church to the Charlotte directory. It is reviewed before it is published.">
+  <PageHeader
+    title="Submit a church"
+    lede="This does not publish the church. It creates a review row. Someone has to approve it before it joins the directory."
+    crumbs={[{ label: 'Submit a church' }]}
+  />
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 py-10">
+    {sent && <p class="callout mb-6" role="status">Thanks. We have the submission and will review it before anything goes on the public site.</p>}
+    {error && <p class="callout mb-6" role="alert">We could not save that. Check the required fields and try again.</p>}
+    <form id="submit-form" class="card p-6 grid gap-4" method="post" action="/api/submit-church">
+      <input type="hidden" name="form_loaded_at" value="" />
+      <div class="hp" aria-hidden="true">
+        <label>Company website <input name="company_website" tabindex="-1" autocomplete="off" /></label>
+      </div>
+      <label class="block text-sm">Church name
+        <input class="field mt-1" name="name" required maxlength="200" />
+      </label>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <label class="block text-sm">Your name
+          <input class="field mt-1" name="contact_name" maxlength="120" />
+        </label>
+        <label class="block text-sm">Email
+          <input class="field mt-1" name="contact_email" type="email" required maxlength="200" />
+        </label>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <label class="block text-sm">Phone
+          <input class="field mt-1" name="phone" maxlength="40" />
+        </label>
+        <label class="block text-sm">Website
+          <input class="field mt-1" name="website" type="url" placeholder="https://" maxlength="300" />
+        </label>
+      </div>
+      <label class="block text-sm">Street address
+        <input class="field mt-1" name="street_address" maxlength="200" />
+      </label>
+      <div class="grid sm:grid-cols-3 gap-4">
+        <label class="block text-sm sm:col-span-1">City
+          <input class="field mt-1" name="city" required maxlength="80" />
+        </label>
+        <label class="block text-sm">State
+          <input class="field mt-1" name="state" required value="NC" maxlength="40" />
+        </label>
+        <label class="block text-sm">ZIP
+          <input class="field mt-1" name="postal_code" maxlength="12" />
+        </label>
+      </div>
+      <label class="block text-sm">Campus name, if this is one site of a larger church
+        <input class="field mt-1" name="campus_name" maxlength="120" />
+      </label>
+      <label class="block text-sm">Denomination family
+        <select class="field mt-1" name="family_id">
+          <option value="">Not sure</option>
+          {families.map((family) => <option value={family.id}>{family.name}</option>)}
+        </select>
+      </label>
+      <label class="block text-sm">Service times, as the church lists them
+        <textarea class="field mt-1 min-h-24" name="service_times_text" maxlength="4000"></textarea>
+      </label>
+      <label class="block text-sm">Languages, separated by semicolons
+        <input class="field mt-1" name="languages_text" placeholder="English; Spanish" maxlength="300" />
+      </label>
+      <label class="block text-sm">Anything else we should know
+        <textarea class="field mt-1 min-h-24" name="message" maxlength="2000"></textarea>
+      </label>
+      <button class="btn-primary" type="submit">Send for review</button>
+      <p id="submit-status" class="text-sm text-gray-600" role="status"></p>
+    </form>
+  </div>
+</Layout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('#submit-form');
+  const loaded = form?.querySelector<HTMLInputElement>('[name="form_loaded_at"]');
+  if (loaded) loaded.value = String(Date.now());
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const status = document.querySelector('#submit-status');
+    if (!form) return;
+    const response = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+    const body = await response.json().catch(() => ({}));
+    if (response.ok && body.ok) {
+      form.reset();
+      if (loaded) loaded.value = String(Date.now());
+      if (status) status.textContent = 'Thanks. We have it, and it will not go live until it is approved.';
+      return;
+    }
+    if (status) status.textContent = Array.isArray(body.errors) ? body.errors.join(' ') : 'We could not save that. Check the form and try again.';
+  });
+</script>

@@ -6,13 +6,28 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
+    "postbuild": "node scripts/verify-sitemap.mjs",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "seed": "node scripts/seed.mjs --sql",
+    "geocode": "node scripts/geocode.mjs",
+    "db:setup": "wrangler d1 migrations apply church-directory-db --local && node scripts/seed.mjs --sql && wrangler d1 execute church-directory-db --local --file=./data/build/seed.sql",
+    "pages:dev": "wrangler pages dev dist",
+    "test": "node --test tests/*.test.mjs",
+    "types": "wrangler types"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.2.1",
     "@astrojs/tailwind": "^5.1.3",
     "astro": "^4.16.18",
+    "jose": "^5.9.6",
+    "leaflet": "^1.9.4",
     "tailwindcss": "^3.4.16"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261119.1",
+    "@types/leaflet": "^1.9.15",
+    "typescript": "^5.6.3",
+    "wrangler": "^4.42.0"
   }
 }

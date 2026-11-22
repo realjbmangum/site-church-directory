@@ -1,0 +1,229 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Desk" description="Review queue for the church directory." noindex>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+    <header class="mb-6">
+      <p class="badge">Review desk</p>
+      <h1 class="font-serif text-4xl mt-3">Church desk</h1>
+      <p class="mt-2 text-gray-600 max-w-2xl">Submissions, suggested edits, and listing checks. Approving a row is the only way these buttons change a church. Rejecting a row leaves the church as it is.</p>
+      <p id="desk-status" class="mt-3 text-sm text-gray-700" role="status">Loading the queue…</p>
+    </header>
+
+    <section class="mb-8">
+      <h2 class="font-serif text-2xl mb-3">Record a listing check</h2>
+      <form id="check-form" class="card p-5 grid gap-3">
+        <label class="text-sm">Church
+          <select name="church_id" class="field mt-1" required></select>
+        </label>
+        <label class="text-sm">What you found
+          <textarea name="summary" class="field mt-1 min-h-20" required placeholder="Service time on the church site now says Sunday 10:00 AM."></textarea>
+        </label>
+        <label class="text-sm">Proof link
+          <input name="evidence_url" class="field mt-1" type="url" placeholder="https://" />
+        </label>
+        <label class="text-sm">Changes to apply when this is approved, as JSON. Leave blank to record the check only.
+          <textarea name="proposed_changes" class="field mt-1 min-h-20 font-mono text-xs" placeholder='{"service_times_text":"Sunday | 10:00 AM"}'></textarea>
+        </label>
+        <button class="btn-primary justify-self-start" type="submit">Save check</button>
+      </form>
+    </section>
+
+    <section class="mb-8">
+      <h2 class="font-serif text-2xl mb-3">Submissions</h2>
+      <div id="submissions" class="grid gap-3"></div>
+    </section>
+    <section class="mb-8">
+      <h2 class="font-serif text-2xl mb-3">Suggested edits</h2>
+      <div id="edits" class="grid gap-3"></div>
+    </section>
+    <section class="mb-8">
+      <h2 class="font-serif text-2xl mb-3">Listing checks</h2>
+      <div id="checks" class="grid gap-3"></div>
+    </section>
+    <section>
+      <h2 class="font-serif text-2xl mb-3">Inbox</h2>
+      <p class="text-sm text-gray-600 mb-3">Mail stored by the church inbox worker. Reading it here does not change a listing.</p>
+      <div id="inbox" class="grid gap-3"></div>
+    </section>
+  </div>
+</Layout>
+
+<script>
+  const status = document.querySelector<HTMLElement>('#desk-status');
+
+  function esc(value: unknown) {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char] || char
+    ));
+  }
+
+  function empty(target: Element, label: string) {
+    target.innerHTML = `<p class="callout text-gray-600">${label}</p>`;
+  }
+
+  async function post(url: string, body: unknown) {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', accept: 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || payload.ok === false) {
+      throw new Error(payload.error || `Request failed (${response.status})`);
+    }
+    return payload;
+  }
+
+  function actions(kind: string, id: string) {
+    return `<div class="mt-4 flex flex-wrap gap-2">
+      <button class="btn-primary text-sm" type="button" data-kind="${kind}" data-action="approve" data-id="${esc(id)}">Approve</button>
+      <button class="btn-quiet text-sm" type="button" data-kind="${kind}" data-action="reject" data-id="${esc(id)}">Reject</button>
+    </div>`;
+  }
+
+  function render(data: Record<string, unknown>) {
+    const submissions = document.querySelector('#submissions');
+    const edits = document.querySelector('#edits');
+    const checks = document.querySelector('#checks');
+    const inbox = document.querySelector('#inbox');
+    const select = document.querySelector<HTMLSelectElement>('#check-form select');
+    if (!submissions || !edits || !checks || !inbox || !select) return;
+
+    const submissionRows = (data.submissions as Record<string, string>[]) || [];
+    const editRows = (data.edits as Record<string, string>[]) || [];
+    const checkRows = (data.checks as Record<string, string>[]) || [];
+    const inboxRows = (data.inbox as Record<string, string>[]) || [];
+    const churches = (data.churches as { id: string; name: string; city: string | null }[]) || [];
+    const counts = (data.counts || {}) as Record<string, number>;
+
+    if (status) {
+      status.textContent = `Signed in as ${data.actor}. ${counts.churches ?? 0} churches in the database. ${counts.submissions ?? 0} submissions, ${counts.edits ?? 0} edits, ${counts.checks ?? 0} checks waiting.`;
+    }
+
+    select.innerHTML = churches.map((church) => (
+      `<option value="${esc(church.id)}">${esc(church.name)}${church.city ? `, ${esc(church.city)}` : ''}</option>`
+    )).join('');
+
+    submissions.innerHTML = submissionRows.length ? submissionRows.map((row) => `
+      <article class="card p-5">
+        <h3 class="font-serif text-xl">${esc(row.name)}</h3>
+        <p class="text-sm text-gray-600 mt-1">${esc(row.city)}, ${esc(row.state)} · ${esc(row.contact_email)}</p>
+        <dl class="mt-3 text-sm text-gray-700 grid gap-1">
+          <div>Phone: ${esc(row.phone || 'not given')}</div>
+          <div>Website: ${esc(row.website || 'not given')}</div>
+          <div>Address: ${esc(row.street_address || 'not given')}</div>
+          <div>Service times: ${esc(row.service_times_text || 'not given')}</div>
+          <div>Languages: ${esc(row.languages_text || 'not given')}</div>
+          <div>Note: ${esc(row.message || 'none')}</div>
+        </dl>
+        ${actions('submission', row.id)}
+      </article>
+    `).join('') : '';
+    if (!submissionRows.length) empty(submissions, 'No submissions waiting.');
+
+    edits.innerHTML = editRows.length ? editRows.map((row) => `
+      <article class="card p-5">
+        <h3 class="font-serif text-xl">${esc(row.church_name || row.church_id)}</h3>
+        <p class="text-sm text-gray-600 mt-1">${esc(row.contact_email)}</p>
+        <pre class="mt-3 text-xs bg-cream-50 border border-cream-300 rounded-xl p-3 overflow-x-auto">${esc(row.proposed_changes)}</pre>
+        ${row.message ? `<p class="mt-2 text-sm text-gray-700">${esc(row.message)}</p>` : ''}
+        ${actions('edit', row.id)}
+      </article>
+    `).join('') : '';
+    if (!editRows.length) empty(edits, 'No suggested edits waiting.');
+
+    checks.innerHTML = checkRows.length ? checkRows.map((row) => `
+      <article class="card p-5">
+        <h3 class="font-serif text-xl">${esc(row.church_id)}</h3>
+        <p class="mt-2 text-gray-800">${esc(row.summary)}</p>
+        ${row.evidence_url ? `<p class="mt-2 text-sm"><a class="text-primary-700" href="${esc(row.evidence_url)}">Proof link</a></p>` : ''}
+        <pre class="mt-3 text-xs bg-cream-50 border border-cream-300 rounded-xl p-3 overflow-x-auto">${esc(row.proposed_changes || '{}')}</pre>
+        ${actions('check', row.id)}
+      </article>
+    `).join('') : '';
+    if (!checkRows.length) empty(checks, 'No listing checks waiting.');
+
+    inbox.innerHTML = inboxRows.length ? inboxRows.map((row) => `
+      <article class="card p-5">
+        <h3 class="font-serif text-lg">${esc(row.subject || '(no subject)')}</h3>
+        <p class="text-sm text-gray-600 mt-1">${esc(row.sender_name || '')} ${esc(row.sender_email || '')} · ${esc(row.received_at || '')}</p>
+        <p class="mt-2 text-sm text-gray-700 whitespace-pre-wrap">${esc(row.excerpt || '')}</p>
+      </article>
+    `).join('') : '';
+    if (!inboxRows.length) empty(inbox, 'No mail stored yet.');
+  }
+
+  async function load() {
+    const response = await fetch('/api/admin/desk', { headers: { accept: 'application/json' } });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const reason = payload.error === 'access_not_configured'
+        ? 'Cloudflare Access is not configured for this environment, so the desk stays closed.'
+        : payload.error === 'd1_not_configured'
+          ? 'The D1 database is not connected yet.'
+          : 'The desk could not be opened. Sign in through Cloudflare Access if this is the live site.';
+      if (status) status.textContent = reason;
+      return;
+    }
+    render(payload);
+  }
+
+  document.body.addEventListener('click', async (event) => {
+    const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-kind]');
+    if (!button) return;
+    button.disabled = true;
+    const kind = button.dataset.kind;
+    const action = button.dataset.action;
+    const id = button.dataset.id;
+    try {
+      if (kind === 'submission') {
+        await post('/api/admin/submission-action', { action, submission_id: id });
+      } else if (kind === 'edit') {
+        await post('/api/admin/edit-action', { action, request_id: id });
+      } else if (kind === 'check') {
+        await post('/api/admin/check-action', { action, check_id: id });
+      }
+      if (status) status.textContent = action === 'approve'
+        ? 'Approved. The public pages update on the next build.'
+        : 'Rejected. The church was not changed.';
+      await load();
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : 'That action failed.';
+      button.disabled = false;
+    }
+  });
+
+  document.querySelector('#check-form')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget as HTMLFormElement;
+    const data = new FormData(form);
+    let proposed: unknown = {};
+    const raw = String(data.get('proposed_changes') || '').trim();
+    if (raw) {
+      try {
+        proposed = JSON.parse(raw);
+      } catch {
+        if (status) status.textContent = 'The changes box has to be valid JSON.';
+        return;
+      }
+    }
+    try {
+      await post('/api/admin/check-action', {
+        action: 'create',
+        church_id: String(data.get('church_id') || ''),
+        summary: String(data.get('summary') || ''),
+        evidence_url: String(data.get('evidence_url') || ''),
+        proposed_changes: proposed,
+      });
+      form.reset();
+      if (status) status.textContent = 'Check saved. It does not change the church until you approve it.';
+      await load();
+    } catch (error) {
+      if (status) status.textContent = error instanceof Error ? error.message : 'Could not save the check.';
+    }
+  });
+
+  load();
+</script>

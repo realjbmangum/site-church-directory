@@ -43,8 +43,8 @@ export default {
         }
       },
       fontFamily: {
-        serif: ['Georgia', 'Cambria', 'Times New Roman', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        serif: ['"Source Serif 4"', 'Georgia', 'Cambria', 'serif'],
+        sans: ['"Source Sans 3"', 'Inter', 'system-ui', 'sans-serif'],
       },
     },
   },

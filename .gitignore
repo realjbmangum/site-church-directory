@@ -3,3 +3,10 @@ dist
 .astro
 .DS_Store
 .env
+.env.*
+!.env.example
+.dev.vars
+.wrangler
+data/build
+worker-configuration.d.ts
+workers/**/worker-configuration.d.ts

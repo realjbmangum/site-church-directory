@@ -1,0 +1,25 @@
+{
+  // Church Directory Pages project. Public pages are the Astro build in dist/.
+  // Form posts and the admin desk are Pages Functions in functions/.
+  // TODO(brian): Do not deploy this until you have created the D1 database,
+  // the Access policy, and the domain. This file uses a placeholder database id
+  // so Wrangler does not provision a database on its own.
+  "name": "church-directory",
+  "compatibility_date": "2026-11-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": "dist",
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 1 }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      // TODO(brian): Create a D1 database named church-directory-db and replace
+      // this placeholder id. Do not reuse pottydirectory-db or recordstops-db.
+      "database_name": "church-directory-db",
+      "database_id": "00000000-0000-4000-8000-000000000001"
+    }
+  ]
+}

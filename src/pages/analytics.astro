@@ -1,0 +1,236 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { getDirectory, countBy, languageCounts, sundayBuckets, saturdayCount, serviceBucket, SERVICE_BUCKET_LABEL } from '../lib/load';
+
+const directory = getDirectory();
+const churches = directory.churches.filter((church) => church.published);
+const familyRows = countBy(churches, (church) => church.familyName);
+const cityRows = countBy(churches, (church) => church.city || 'City not listed');
+const languageRows = languageCounts(churches);
+const timeRows = sundayBuckets(churches);
+const saturdays = saturdayCount(churches);
+const families = directory.families.filter((family) => family.churchCount > 0);
+const languages = [...new Set(churches.flatMap((church) => church.languages))].sort();
+
+function width(count: number, max: number) {
+  if (max <= 0) return 0;
+  return Math.max(4, Math.round((count / max) * 100));
+}
+---
+
+<Layout
+  title="Analytics"
+  description="Charts and a sortable table of church types in the Charlotte pilot, by denomination, city, language, and service time."
+>
+  <PageHeader
+    title="Analytics"
+    lede="Counts for the Charlotte pilot. The table sorts and filters in the browser. The charts follow the same filters."
+    crumbs={[{ label: 'Analytics' }]}
+  />
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+    <form id="analytics-filters" class="card p-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <label class="block text-sm">
+        <span class="text-gray-700">Family</span>
+        <select name="family" class="field mt-1">
+          <option value="">Any</option>
+          {families.map((family) => <option value={family.slug}>{family.name}</option>)}
+        </select>
+      </label>
+      <label class="block text-sm">
+        <span class="text-gray-700">City or ZIP</span>
+        <input name="place" class="field mt-1" placeholder="Cornelius or 28031" />
+      </label>
+      <label class="block text-sm">
+        <span class="text-gray-700">Language</span>
+        <select name="language" class="field mt-1">
+          <option value="">Any</option>
+          {languages.map((language) => <option value={language}>{language}</option>)}
+        </select>
+      </label>
+      <label class="block text-sm">
+        <span class="text-gray-700">Sunday start</span>
+        <select name="time" class="field mt-1">
+          <option value="">Any</option>
+          {timeRows.map((row) => <option value={row.id}>{row.label}</option>)}
+        </select>
+      </label>
+    </form>
+
+    <div id="charts" class="grid lg:grid-cols-2 gap-4">
+      <section class="card p-5">
+        <h2 class="font-serif text-xl">By denomination family</h2>
+        <div class="mt-4 space-y-3">
+          {familyRows.map((row) => (
+            <div>
+              <div class="flex justify-between text-sm mb-1"><span>{row.label}</span><span>{row.count}</span></div>
+              <div class="h-2 rounded-full bg-cream-200"><div class="h-2 rounded-full bg-primary-500" style={`width:${width(row.count, familyRows[0]?.count || 1)}%`}></div></div>
+            </div>
+          ))}
+        </div>
+      </section>
+      <section class="card p-5">
+        <h2 class="font-serif text-xl">By city</h2>
+        <div class="mt-4 space-y-3">
+          {cityRows.map((row) => (
+            <div>
+              <div class="flex justify-between text-sm mb-1"><span>{row.label}</span><span>{row.count}</span></div>
+              <div class="h-2 rounded-full bg-cream-200"><div class="h-2 rounded-full bg-primary-500" style={`width:${width(row.count, cityRows[0]?.count || 1)}%`}></div></div>
+            </div>
+          ))}
+        </div>
+      </section>
+      <section class="card p-5">
+        <h2 class="font-serif text-xl">By language</h2>
+        <p class="mt-1 text-sm text-gray-600">A church is counted once for each language it lists.</p>
+        <div class="mt-4 space-y-3">
+          {languageRows.map((row) => (
+            <div>
+              <div class="flex justify-between text-sm mb-1"><span>{row.label}</span><span>{row.count}</span></div>
+              <div class="h-2 rounded-full bg-cream-200"><div class="h-2 rounded-full bg-primary-500" style={`width:${width(row.count, languageRows[0]?.count || 1)}%`}></div></div>
+            </div>
+          ))}
+        </div>
+      </section>
+      <section class="card p-5">
+        <h2 class="font-serif text-xl">Sunday start time</h2>
+        <p class="mt-1 text-sm text-gray-600">{saturdays} {saturdays === 1 ? 'church mentions' : 'churches mention'} a Saturday service. Those churches also sit in a Sunday bucket when we could read one.</p>
+        <div class="mt-4 space-y-3">
+          {timeRows.map((row) => (
+            <div>
+              <div class="flex justify-between text-sm mb-1"><span>{row.label}</span><span>{row.count}</span></div>
+              <div class="h-2 rounded-full bg-cream-200"><div class="h-2 rounded-full bg-primary-500" style={`width:${width(row.count, Math.max(...timeRows.map((item) => item.count)))}%`}></div></div>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+
+    <div class="card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm" id="church-table">
+          <thead class="bg-cream-50 text-left text-gray-700">
+            <tr>
+              <th class="p-3 font-medium"><button type="button" data-sort="name">Church</button></th>
+              <th class="p-3 font-medium"><button type="button" data-sort="city">City</button></th>
+              <th class="p-3 font-medium"><button type="button" data-sort="family">Family</button></th>
+              <th class="p-3 font-medium"><button type="button" data-sort="body">Body</button></th>
+              <th class="p-3 font-medium"><button type="button" data-sort="language">Languages</button></th>
+              <th class="p-3 font-medium"><button type="button" data-sort="time">Sunday</button></th>
+            </tr>
+          </thead>
+          <tbody>
+            {churches.map((church) => (
+              <tr
+                class="border-t border-cream-200"
+                data-family={church.familySlug}
+                data-city={church.city || ''}
+                data-zip={church.postalCode || ''}
+                data-languages={church.languages.join('|')}
+                data-bucket={serviceBucket(church)}
+                data-name={church.name}
+                data-body={church.bodyName}
+                data-time={church.earliestSundayTime || ''}
+              >
+                <td class="p-3"><a class="text-primary-800 hover:text-primary-900" href={`/churches/${church.slug}`}>{church.name}</a></td>
+                <td class="p-3">{church.city || 'Not listed'}</td>
+                <td class="p-3">{church.familyName}</td>
+                <td class="p-3">{church.bodyName}</td>
+                <td class="p-3">{church.languages.join(', ')}</td>
+                <td class="p-3">{church.earliestSundayTime || SERVICE_BUCKET_LABEL[serviceBucket(church)]}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('#analytics-filters');
+  const table = document.querySelector<HTMLTableElement>('#church-table');
+  const charts = document.querySelector('#charts');
+  if (!form || !table || !charts) throw new Error('analytics markup missing');
+  const tbody = table.tBodies[0];
+  let sortKey = 'name';
+  let sortDir = 1;
+
+  function filters() {
+    const data = new FormData(form!);
+    return {
+      family: String(data.get('family') || ''),
+      place: String(data.get('place') || '').trim().toLowerCase(),
+      language: String(data.get('language') || '').toLowerCase(),
+      time: String(data.get('time') || ''),
+    };
+  }
+
+  function visibleRows() {
+    const current = filters();
+    return [...tbody.rows].filter((row) => {
+      const languages = (row.dataset.languages || '').toLowerCase().split('|');
+      const haystack = `${row.dataset.city || ''} ${row.dataset.zip || ''}`.toLowerCase();
+      if (current.family && row.dataset.family !== current.family) return false;
+      if (current.place && !haystack.includes(current.place)) return false;
+      if (current.language && !languages.includes(current.language)) return false;
+      if (current.time && row.dataset.bucket !== current.time) return false;
+      return true;
+    });
+  }
+
+  function bar(label: string, count: number, max: number) {
+    const width = max > 0 ? Math.max(4, Math.round((count / max) * 100)) : 0;
+    return `<div><div class="flex justify-between text-sm mb-1"><span>${label}</span><span>${count}</span></div><div class="h-2 rounded-full bg-cream-200"><div class="h-2 rounded-full bg-primary-500" style="width:${width}%"></div></div></div>`;
+  }
+
+  function chart(title: string, note: string, rows: { label: string; count: number }[]) {
+    const max = rows[0]?.count || 1;
+    return `<section class="card p-5"><h2 class="font-serif text-xl">${title}</h2>${note ? `<p class="mt-1 text-sm text-gray-600">${note}</p>` : ''}<div class="mt-4 space-y-3">${rows.map((row) => bar(row.label, row.count, max)).join('')}</div></section>`;
+  }
+
+  function countLabels(rows: HTMLTableRowElement[], pick: (row: HTMLTableRowElement) => string[]) {
+    const counts = new Map<string, number>();
+    for (const row of rows) {
+      for (const label of pick(row)) {
+        if (!label) continue;
+        counts.set(label, (counts.get(label) || 0) + 1);
+      }
+    }
+    return [...counts.entries()]
+      .map(([label, count]) => ({ label, count }))
+      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  }
+
+  function redraw() {
+    const rows = visibleRows();
+    for (const row of tbody.rows) row.hidden = !rows.includes(row);
+    const sorted = [...rows].sort((a, b) => {
+      const av = (a.dataset[sortKey] || a.cells[0].textContent || '').toLowerCase();
+      const bv = (b.dataset[sortKey] || b.cells[0].textContent || '').toLowerCase();
+      return av.localeCompare(bv) * sortDir;
+    });
+    for (const row of sorted) tbody.append(row);
+    const family = countLabels(rows, (row) => [row.cells[2].textContent || '']);
+    const city = countLabels(rows, (row) => [row.cells[1].textContent || '']);
+    const language = countLabels(rows, (row) => (row.dataset.languages || '').split('|').filter(Boolean));
+    const time = countLabels(rows, (row) => [row.cells[5].textContent || '']);
+    charts!.innerHTML = [
+      chart('By denomination family', '', family),
+      chart('By city', '', city),
+      chart('By language', 'A church is counted once for each language it lists.', language),
+      chart('Sunday start time', 'Saturday services stay in the table when the Sunday filter is set to any.', time),
+    ].join('');
+  }
+
+  form.addEventListener('input', redraw);
+  form.addEventListener('submit', (event) => event.preventDefault());
+  table.querySelectorAll<HTMLButtonElement>('[data-sort]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const key = button.dataset.sort || 'name';
+      sortDir = sortKey === key ? sortDir * -1 : 1;
+      sortKey = key;
+      redraw();
+    });
+  });
+</script>

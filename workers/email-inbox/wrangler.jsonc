@@ -1,0 +1,30 @@
+{
+  // Inbound mail worker for this directory only.
+  // Do not add "addresses". On current Wrangler, that field is applied by
+  // `wrangler deploy` and would take over a live Email Routing rule.
+  // Staged values live in email-routing.rule.json. Do not deploy this worker
+  // until Brian creates the D1 database and turns the route on himself.
+  "name": "church-directory-email-inbox",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 1 }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      // TODO(brian): Use the same church-directory-db id as the Pages project.
+      // Do not point this at pottydirectory-db or recordstops-db.
+      "database_name": "church-directory-db",
+      "database_id": "00000000-0000-4000-8000-000000000001"
+    }
+  ],
+  "vars": {
+    // TODO(brian): Set a verified Email Routing destination before the route is on.
+    // Leave this empty so a premature deploy does not forward mail.
+    "BACKUP_FORWARD_TO": ""
+  }
+}

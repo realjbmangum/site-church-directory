@@ -1,0 +1,56 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import ChurchCard from '../components/ChurchCard.astro';
+import { getDirectory, formatLongDate } from '../lib/load';
+
+const directory = getDirectory();
+const churches = directory.churches.filter((church) => church.published);
+const unplaced = churches.filter((church) => !church.city);
+const checked = formatLongDate(directory.checkedOn);
+const families = directory.families.filter((family) => family.churchCount > 0);
+---
+
+<Layout
+  title="Charlotte metro"
+  description="Churches in the Charlotte metro pilot, including Matthews, Mint Hill, Huntersville, Cornelius, Davidson, and Pineville."
+>
+  <PageHeader
+    title="Charlotte metro"
+    lede={`This pilot covers ${directory.counts.churches} churches in Charlotte and nearby towns${checked ? `, checked ${checked}` : ''}. Open the map to filter them, or start with a town.`}
+    crumbs={[{ label: 'Charlotte metro' }]}
+  />
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-10">
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {directory.cities.map((city) => (
+        <a class="card p-5 block hover:bg-cream-50" href={`/cities/${city.slug}`}>
+          <h2 class="font-serif text-xl">{city.name}</h2>
+          <p class="mt-1 text-sm text-gray-600">{city.churchCount} {city.churchCount === 1 ? 'church' : 'churches'}</p>
+        </a>
+      ))}
+    </div>
+
+    <div>
+      <h2 class="font-serif text-2xl mb-4">Families in this metro</h2>
+      <div class="flex flex-wrap gap-2">
+        {families.map((family) => (
+          <a class="badge hover:bg-primary-100" href={`/denominations/${family.slug}`}>{family.name} · {family.churchCount}</a>
+        ))}
+      </div>
+    </div>
+
+    {unplaced.length > 0 && (
+      <div>
+        <h2 class="font-serif text-2xl mb-3">Address still missing</h2>
+        <p class="text-gray-600 mb-4">These listings have a website we could check, and no street address in the seed file, so they are not on the map yet.</p>
+        <div class="grid md:grid-cols-2 gap-4">
+          {unplaced.map((church) => <ChurchCard church={church} />)}
+        </div>
+      </div>
+    )}
+
+    <p>
+      <a class="btn-primary" href="/map">Open the map</a>
+    </p>
+  </div>
+</Layout>

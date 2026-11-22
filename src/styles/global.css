@@ -8,37 +8,72 @@
   }
 
   body {
-    @apply bg-cream-50 text-gray-800 antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+    @apply bg-cream-100 text-gray-800 antialiased;
+    font-family: 'Source Sans 3', 'Inter', system-ui, sans-serif;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif text-gray-900;
+    font-family: 'Source Serif 4', Georgia, serif;
+    @apply text-gray-900;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors duration-200 shadow-sm;
+    @apply inline-flex items-center justify-center px-5 py-2.5 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors duration-200;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-6 py-3 bg-white text-primary-700 font-medium rounded-lg border border-primary-200 hover:bg-primary-50 transition-colors duration-200;
+    @apply inline-flex items-center justify-center px-5 py-2.5 bg-white text-primary-800 font-medium rounded-lg border border-cream-300 hover:bg-cream-50 transition-colors duration-200;
+  }
+
+  .btn-quiet {
+    @apply inline-flex items-center justify-center px-4 py-2 bg-white text-gray-800 font-medium rounded-lg border border-cream-300 hover:bg-cream-50 transition-colors duration-200;
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-cream-200 overflow-hidden hover:shadow-md transition-shadow duration-200;
+    @apply bg-white rounded-2xl border border-cream-300 overflow-hidden;
+  }
+
+  .callout {
+    @apply bg-cream-50 border border-cream-300 rounded-2xl p-5;
+  }
+
+  .field {
+    @apply w-full px-3 py-2.5 bg-white border border-cream-300 rounded-lg text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-primary-400;
   }
 
   .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cream-200 text-primary-900;
   }
 
-  .badge-denomination {
-    @apply bg-accent-100 text-accent-800;
+  .prose-page {
+    @apply max-w-3xl;
   }
+}
 
-  .badge-service {
-    @apply bg-primary-100 text-primary-800;
+.leaflet-container {
+  font-family: 'Source Sans 3', 'Inter', system-ui, sans-serif;
+  background: #faf3e6;
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+}
+
+.hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.map-frame {
+  height: 32rem;
+}
+
+@media (min-width: 1024px) {
+  .map-frame {
+    height: 40rem;
   }
 }

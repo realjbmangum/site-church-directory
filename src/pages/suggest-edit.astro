@@ -1,0 +1,100 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { getDirectory } from '../lib/load';
+
+const churches = getDirectory().churches.filter((church) => church.published);
+const selected = Astro.url.searchParams.get('church') || '';
+const sent = Astro.url.searchParams.get('sent') === '1';
+const error = Astro.url.searchParams.get('error') === '1';
+---
+
+<Layout title="Suggest an edit" description="Suggest a correction to a Charlotte church listing. An editor approves it before the public page changes.">
+  <PageHeader
+    title="Suggest an edit"
+    lede="Tell us what to change. The church page stays as it is until a reviewer approves the suggestion."
+    crumbs={[{ label: 'Suggest an edit' }]}
+  />
+  <div class="max-w-2xl mx-auto px-4 sm:px-6 py-10">
+    {sent && <p class="callout mb-6" role="status">Thanks. The suggestion is in the review queue.</p>}
+    {error && <p class="callout mb-6" role="alert">We could not save that. Check the church and your email, then try again.</p>}
+    <form id="edit-form" class="card p-6 grid gap-4" method="post" action="/api/suggest-edit">
+      <input type="hidden" name="form_loaded_at" value="" />
+      <div class="hp" aria-hidden="true">
+        <label>Company website <input name="company_website" tabindex="-1" autocomplete="off" /></label>
+      </div>
+      <label class="block text-sm">Church
+        <select class="field mt-1" name="church_id" required>
+          <option value="">Choose a church</option>
+          {churches.map((church) => (
+            <option value={church.id} selected={church.slug === selected}>{church.name}{church.city ? `, ${church.city}` : ''}</option>
+          ))}
+        </select>
+      </label>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <label class="block text-sm">Your name
+          <input class="field mt-1" name="contact_name" maxlength="120" />
+        </label>
+        <label class="block text-sm">Email
+          <input class="field mt-1" name="contact_email" type="email" required maxlength="200" />
+        </label>
+      </div>
+      <p class="text-sm text-gray-600">Fill in only the fields that should change. Blank fields are left alone.</p>
+      <label class="block text-sm">Church name
+        <input class="field mt-1" name="name" maxlength="200" />
+      </label>
+      <label class="block text-sm">Phone
+        <input class="field mt-1" name="phone" maxlength="40" />
+      </label>
+      <label class="block text-sm">Website
+        <input class="field mt-1" name="website" type="url" placeholder="https://" />
+      </label>
+      <label class="block text-sm">Street address
+        <input class="field mt-1" name="street_address" maxlength="200" />
+      </label>
+      <div class="grid sm:grid-cols-3 gap-4">
+        <label class="block text-sm">City
+          <input class="field mt-1" name="city" maxlength="80" />
+        </label>
+        <label class="block text-sm">State
+          <input class="field mt-1" name="state" maxlength="40" />
+        </label>
+        <label class="block text-sm">ZIP
+          <input class="field mt-1" name="postal_code" maxlength="12" />
+        </label>
+      </div>
+      <label class="block text-sm">Campus name
+        <input class="field mt-1" name="campus_name" maxlength="120" />
+      </label>
+      <label class="block text-sm">Service times
+        <textarea class="field mt-1 min-h-24" name="service_times_text" maxlength="4000"></textarea>
+      </label>
+      <label class="block text-sm">Languages, separated by semicolons
+        <input class="field mt-1" name="languages_text" maxlength="300" />
+      </label>
+      <label class="block text-sm">Note
+        <textarea class="field mt-1 min-h-24" name="message" maxlength="2000"></textarea>
+      </label>
+      <button class="btn-primary" type="submit">Send suggestion</button>
+      <p id="edit-status" class="text-sm text-gray-600" role="status"></p>
+    </form>
+  </div>
+</Layout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('#edit-form');
+  const loaded = form?.querySelector<HTMLInputElement>('[name="form_loaded_at"]');
+  if (loaded) loaded.value = String(Date.now());
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const status = document.querySelector('#edit-status');
+    if (!form) return;
+    const response = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+    const body = await response.json().catch(() => ({}));
+    if (response.ok && body.ok) {
+      if (status) status.textContent = 'Thanks. A reviewer will approve or reject this before the listing changes.';
+      return;
+    }
+    if (status) status.textContent = Array.isArray(body.errors) ? body.errors.join(' ') : 'We could not save that.';
+  });
+</script>
