@@ -1,0 +1,66 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import DatabaseMissing from '../../components/DatabaseMissing.astro';
+import { getDb } from '../../lib/db';
+import { errorMessage, flashMessage } from '../../lib/flash';
+import { listSubmissions } from '../../lib/queries';
+
+const db = getDb(Astro.locals);
+const status = Astro.url.searchParams.get('status') === 'approved' || Astro.url.searchParams.get('status') === 'rejected'
+  ? Astro.url.searchParams.get('status')!
+  : 'waiting';
+const rows = db ? await listSubmissions(db, status) : [];
+---
+
+<AdminLayout title="Submissions" flash={flashMessage(Astro.url.searchParams.get('done'))} error={errorMessage(Astro.url.searchParams.get('error'))}>
+  {db ? (
+    <>
+      <h1 class="font-serif text-3xl">Submissions</h1>
+      <p class="mt-2 text-sm text-gray-600">
+        <a href="/admin/submissions">Waiting</a>
+        <span class="px-2">/</span>
+        <a href="/admin/submissions?status=approved">Approved</a>
+        <span class="px-2">/</span>
+        <a href="/admin/submissions?status=rejected">Rejected</a>
+      </p>
+      {rows.length === 0 ? <p class="mt-6 card p-4">No {status} submissions.</p> : (
+        <ul class="mt-6 space-y-4">
+          {rows.map((row) => (
+            <li class="card p-4">
+              <div class="flex flex-wrap justify-between gap-2">
+                <h2 class="font-serif text-xl">{row.name}</h2>
+                <span class="badge">{row.status}</span>
+              </div>
+              <p class="mt-1 text-sm text-gray-600">{[row.address, row.city, row.state, row.zip].filter(Boolean).join(', ')}</p>
+              <dl class="mt-3 grid sm:grid-cols-2 gap-2 text-sm">
+                <div><dt class="text-gray-500">Phone</dt><dd>{row.phone || 'Not given'}</dd></div>
+                <div><dt class="text-gray-500">Website</dt><dd>{row.website || 'Not given'}</dd></div>
+                <div><dt class="text-gray-500">Family</dt><dd>{row.denomination_family || 'Not given'}</dd></div>
+                <div><dt class="text-gray-500">Body</dt><dd>{row.denomination_body || 'Not given'}</dd></div>
+                <div><dt class="text-gray-500">Languages</dt><dd>{row.languages_text || 'Not given'}</dd></div>
+                <div><dt class="text-gray-500">From</dt><dd>{row.submitter_name || 'No name'} {row.submitter_email ? `(${row.submitter_email})` : ''}</dd></div>
+              </dl>
+              {row.service_times && <p class="mt-3 text-sm bg-cream-100 rounded-lg px-3 py-2 whitespace-pre-wrap">{row.service_times}</p>}
+              {row.note && <p class="mt-2 text-sm text-gray-700">{row.note}</p>}
+              {row.status === 'waiting' && (
+                <div class="mt-4 flex gap-2">
+                  <form method="post" action="/api/admin/submission">
+                    <input type="hidden" name="id" value={row.id} />
+                    <input type="hidden" name="action" value="approve" />
+                    <button class="btn-primary text-sm" type="submit">Approve</button>
+                  </form>
+                  <form method="post" action="/api/admin/submission">
+                    <input type="hidden" name="id" value={row.id} />
+                    <input type="hidden" name="action" value="reject" />
+                    <button class="btn-quiet text-sm" type="submit">Reject</button>
+                  </form>
+                </div>
+              )}
+              {row.church_id && <p class="mt-3 text-sm"><a class="text-primary-800" href={`/church/${row.church_id}`}>Open the listing</a></p>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
+  ) : <DatabaseMissing />}
+</AdminLayout>

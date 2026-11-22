@@ -8,37 +8,72 @@
   }
 
   body {
-    @apply bg-cream-50 text-gray-800 antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+    @apply bg-cream-100 text-gray-800 antialiased;
+    font-family: 'Source Sans 3', system-ui, sans-serif;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-serif text-gray-900;
+  h1, h2, h3, h4 {
+    font-family: 'Source Serif 4', Georgia, serif;
+  }
+
+  :focus-visible {
+    outline: 2px solid #b85f3e;
+    outline-offset: 2px;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center px-6 py-3 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 transition-colors duration-200 shadow-sm;
+    @apply inline-flex items-center justify-center px-5 py-2.5 bg-primary-600 text-white font-semibold rounded-lg hover:bg-primary-700 transition-colors;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-6 py-3 bg-white text-primary-700 font-medium rounded-lg border border-primary-200 hover:bg-primary-50 transition-colors duration-200;
+    @apply inline-flex items-center justify-center px-5 py-2.5 bg-white text-primary-800 font-semibold rounded-lg border border-cream-400 hover:bg-cream-100 transition-colors;
+  }
+
+  .btn-quiet {
+    @apply inline-flex items-center justify-center px-4 py-2 bg-white text-gray-800 font-medium rounded-lg border border-cream-400 hover:bg-cream-100;
   }
 
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-cream-200 overflow-hidden hover:shadow-md transition-shadow duration-200;
+    @apply bg-white rounded-2xl border border-cream-300;
+  }
+
+  .field {
+    @apply w-full rounded-lg border border-cream-400 bg-white px-3 py-2 text-gray-900;
   }
 
   .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cream-200 text-primary-900;
   }
+}
 
-  .badge-denomination {
-    @apply bg-accent-100 text-accent-800;
-  }
+.leaflet-container {
+  font-family: inherit;
+  background: #faf3e6;
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+}
 
-  .badge-service {
-    @apply bg-primary-100 text-primary-800;
-  }
+/* Tailwind's image reset stretches Leaflet tiles. Keep the tile grid intact. */
+.leaflet-container img,
+.leaflet-container canvas,
+.leaflet-pane img {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  background: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  z-index: 80;
+}
+
+.skip-link:focus {
+  top: 1rem;
 }

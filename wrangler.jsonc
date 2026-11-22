@@ -1,0 +1,34 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "church-directory",
+  "compatibility_date": "2026-11-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 1
+    }
+  },
+  // Existing resources. Do not provision new ones from this file.
+  // Do not deploy this Worker, attach a domain, or apply migrations with --remote
+  // until Brian reviews the pull request.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "church-directory",
+      "database_id": "7aeb3846-7268-45bb-bb4d-dcd567cb84bd",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "ASSETS_BUCKET",
+      "bucket_name": "church-directory-assets"
+    }
+  ]
+}
