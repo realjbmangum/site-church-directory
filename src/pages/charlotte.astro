@@ -1,0 +1,65 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ChurchCard from '../components/ChurchCard.astro';
+import DatabaseMissing from '../components/DatabaseMissing.astro';
+import { getDb } from '../lib/db';
+import { listCities, listOpenChurches, unplacedChurches } from '../lib/queries';
+
+const db = getDb(Astro.locals);
+const churches = db ? await listOpenChurches(db) : [];
+const cities = db ? (await listCities(db)).filter((city) => city.church_count > 0) : [];
+const unplaced = db ? await unplacedChurches(db) : [];
+---
+
+<Layout
+  title="Charlotte metro"
+  path="/charlotte"
+  description="Churches in the Charlotte metro whose service times were checked against their own websites."
+>
+  {db ? (
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+      <p class="text-sm font-semibold uppercase tracking-wide text-primary-700">Metro</p>
+      <h1 class="mt-2 font-serif text-4xl text-gray-900">Charlotte</h1>
+      <p class="mt-3 max-w-2xl text-gray-700">
+        The pilot covers Charlotte and nearby towns in this set: Matthews, Mint Hill, Huntersville, Cornelius, Davidson, and Pineville. {churches.length} churches are open in the directory.
+      </p>
+      <div class="mt-6 flex flex-wrap gap-2">
+        {cities.map((city) => (
+          <a href={`/city/${city.slug}`} class="badge text-sm px-3 py-1">{city.name} ({city.church_count})</a>
+        ))}
+      </div>
+      <div class="mt-8">
+        <a href="/map" class="btn-secondary">Open the map</a>
+      </div>
+      {unplaced.length > 0 && (
+        <section class="mt-10">
+          <h2 class="font-serif text-2xl">City not on the listing yet</h2>
+          <p class="mt-2 text-sm text-gray-600">These churches did not have a city in the source file. They stay in the directory.</p>
+          <div class="mt-4 grid gap-4 md:grid-cols-2">
+            {unplaced.map((church) => (
+              <ChurchCard slug={church.slug} name={church.name} familyName={church.family_name} city={church.city} state={church.state} sunday={church.earliest_sunday_time} languages={church.languages_text} serviceTimes={church.service_times} />
+            ))}
+          </div>
+        </section>
+      )}
+      <div class="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {churches.filter((church) => church.city_id).slice(0, 12).map((church) => (
+          <ChurchCard
+            slug={church.slug}
+            name={church.name}
+            familyName={church.family_name}
+            bodyName={church.body_name}
+            city={church.city}
+            state={church.state}
+            sunday={church.earliest_sunday_time}
+            languages={church.languages_text}
+            serviceTimes={church.service_times}
+            photoKey={church.photo_key}
+            historicallyBlack={Boolean(church.historically_black_tradition)}
+          />
+        ))}
+      </div>
+      <p class="mt-6 text-sm text-gray-600">Showing 12 of {churches.length}. The map has every open church.</p>
+    </div>
+  ) : <DatabaseMissing />}
+</Layout>

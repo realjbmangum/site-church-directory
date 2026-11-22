@@ -1,0 +1,42 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import DatabaseMissing from '../../components/DatabaseMissing.astro';
+import { getDb } from '../../lib/db';
+import { listFamilies } from '../../lib/queries';
+
+const db = getDb(Astro.locals);
+const families = db ? await listFamilies(db) : [];
+const withChurches = families.filter((family) => family.church_count > 0);
+const empty = families.filter((family) => family.church_count === 0);
+---
+
+<Layout
+  title="Denominations"
+  path="/denomination"
+  description="Denomination families in the Charlotte church directory, from Baptist to the bodies whose tradition is not stated."
+>
+  {db ? (
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+      <h1 class="font-serif text-4xl text-gray-900">Denomination families</h1>
+      <p class="mt-3 max-w-2xl text-gray-700">The taxonomy has {families.length} families. {withChurches.length} of them have at least one church in this pilot. A family page lists the specific bodies under it.</p>
+      <div class="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {withChurches.map((family) => (
+          <a href={`/denomination/${family.slug}`} class="card p-5 hover:border-primary-300">
+            <h2 class="font-serif text-2xl text-gray-900">{family.name}</h2>
+            <p class="mt-1 text-sm text-gray-600">{family.church_count} {family.church_count === 1 ? 'church' : 'churches'}</p>
+          </a>
+        ))}
+      </div>
+      {empty.length > 0 && (
+        <section class="mt-12">
+          <h2 class="font-serif text-2xl">No churches in the pilot yet</h2>
+          <ul class="mt-4 flex flex-wrap gap-2">
+            {empty.map((family) => (
+              <li><a class="badge" href={`/denomination/${family.slug}`}>{family.name}</a></li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  ) : <DatabaseMissing />}
+</Layout>

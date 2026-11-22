@@ -1,139 +1,125 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import SearchHero from '../components/SearchHero.astro';
 import ChurchCard from '../components/ChurchCard.astro';
-import DenominationCard from '../components/DenominationCard.astro';
-import churches from '../data/sample-churches.json';
+import DatabaseMissing from '../components/DatabaseMissing.astro';
+import { getDb } from '../lib/db';
+import { listCities, listFamilies, listOpenChurches } from '../lib/queries';
+import { TIME_BUCKETS, timeBucket } from '@shared/time';
 
-const featuredChurches = churches.slice(0, 6);
-
-const denominations = [
-  { name: 'Baptist', slug: 'baptist', count: 1247, description: 'Known for believer\'s baptism and congregational governance. Strong emphasis on scripture.' },
-  { name: 'Catholic', slug: 'catholic', count: 892, description: 'The largest Christian church, led by the Pope. Traditional liturgy and sacraments.' },
-  { name: 'Methodist', slug: 'methodist', count: 634, description: 'Emphasizing personal holiness and social justice. Open communion and inclusive worship.' },
-  { name: 'Non-Denominational', slug: 'non-denominational', count: 1823, description: 'Independent churches not affiliated with a denomination. Often contemporary in style.' },
-  { name: 'Episcopal', slug: 'episcopal', count: 298, description: 'Part of the Anglican Communion. Liturgical worship with a broad theological range.' },
-  { name: 'Presbyterian', slug: 'presbyterian', count: 412, description: 'Reformed tradition with elder-led governance. Emphasizes God\'s sovereignty.' },
-];
+const db = getDb(Astro.locals);
+const churches = db ? await listOpenChurches(db) : [];
+const families = db ? (await listFamilies(db)).filter((family) => family.church_count > 0) : [];
+const cities = db ? (await listCities(db)).filter((city) => city.church_count > 0) : [];
+const withProof = churches.filter((church) => church.proof_url).length;
+const buckets = TIME_BUCKETS.map((bucket) => ({
+  ...bucket,
+  count: churches.filter((church) => timeBucket(church.earliest_sunday_minutes) === bucket.id).length,
+})).filter((bucket) => bucket.count > 0);
 ---
 
-<Layout title="Home">
-  <SearchHero />
+<Layout
+  title="Home"
+  path="/"
+  description="Find a church in Charlotte. Browse verified listings by denomination, language, city, and Sunday service time."
+>
+  {db ? (
+    <>
+      <section class="bg-cream-50 border-b border-cream-300">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-14 md:py-20">
+          <p class="text-sm font-semibold uppercase tracking-wide text-primary-700">Charlotte pilot</p>
+          <h1 class="mt-3 font-serif text-4xl md:text-5xl text-gray-900 max-w-3xl">Find a church whose service time you can check.</h1>
+          <p class="mt-4 max-w-2xl text-lg text-gray-700">
+            This directory lists churches in Charlotte and nearby towns. Each one includes a short quote from the church’s own website, a link to that page, and the date we checked it.
+          </p>
+          <form action="/map" method="get" class="mt-8 card p-4 grid gap-3 md:grid-cols-[1fr_14rem_auto] md:items-end">
+            <label class="block">
+              <span class="text-sm font-medium text-gray-800">Name, city, or ZIP</span>
+              <input class="field mt-1" type="search" name="q" placeholder="Matthews, 28205, Baptist" />
+            </label>
+            <label class="block">
+              <span class="text-sm font-medium text-gray-800">Denomination family</span>
+              <select class="field mt-1" name="family">
+                <option value="">Any family</option>
+                {families.map((family) => <option value={family.slug}>{family.name}</option>)}
+              </select>
+            </label>
+            <button class="btn-primary" type="submit">Search the map</button>
+          </form>
+          <dl class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="card px-4 py-3"><dt class="text-sm text-gray-600">Open churches</dt><dd class="font-serif text-3xl">{churches.length}</dd></div>
+            <div class="card px-4 py-3"><dt class="text-sm text-gray-600">With a source link</dt><dd class="font-serif text-3xl">{withProof}</dd></div>
+            <div class="card px-4 py-3"><dt class="text-sm text-gray-600">Families with a church</dt><dd class="font-serif text-3xl">{families.length}</dd></div>
+            <div class="card px-4 py-3"><dt class="text-sm text-gray-600">Towns</dt><dd class="font-serif text-3xl">{cities.length}</dd></div>
+          </dl>
+        </div>
+      </section>
 
-  <!-- Featured Churches -->
-  <section class="py-16 bg-cream-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-end mb-8">
+      <section class="max-w-6xl mx-auto px-4 sm:px-6 py-14">
+        <div class="flex items-end justify-between gap-4 mb-6">
+          <h2 class="font-serif text-3xl text-gray-900">A few churches</h2>
+          <a href="/map" class="text-sm font-semibold text-primary-700">See all on the map</a>
+        </div>
+        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {churches.slice(0, 6).map((church) => (
+            <ChurchCard
+              slug={church.slug}
+              name={church.name}
+              familyName={church.family_name}
+              bodyName={church.body_name}
+              city={church.city}
+              state={church.state}
+              serviceTimes={church.service_times}
+              sunday={church.earliest_sunday_time}
+              languages={church.languages_text}
+              photoKey={church.photo_key}
+              historicallyBlack={Boolean(church.historically_black_tradition)}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section class="bg-white border-y border-cream-300">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-14">
+          <h2 class="font-serif text-3xl text-gray-900">Browse by denomination family</h2>
+          <p class="mt-2 text-gray-600 max-w-2xl">Family is the broad tradition. The church page also names the specific body when we know it.</p>
+          <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {families.map((family) => (
+              <a href={`/denomination/${family.slug}`} class="card p-4 hover:border-primary-300">
+                <p class="font-serif text-xl text-gray-900">{family.name}</p>
+                <p class="text-sm text-gray-600 mt-1">{family.church_count} {family.church_count === 1 ? 'church' : 'churches'}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section class="max-w-6xl mx-auto px-4 sm:px-6 py-14 grid gap-8 lg:grid-cols-2">
         <div>
-          <h2 class="text-3xl font-serif font-bold text-gray-900">Featured Churches</h2>
-          <p class="text-gray-600 mt-2">Welcoming communities ready to meet you</p>
+          <h2 class="font-serif text-3xl text-gray-900">Towns in the pilot</h2>
+          <ul class="mt-4 grid grid-cols-2 gap-3">
+            {cities.map((city) => (
+              <li>
+                <a href={`/city/${city.slug}`} class="card block px-4 py-3 hover:border-primary-300">
+                  <span class="font-medium text-gray-900">{city.name}</span>
+                  <span class="block text-sm text-gray-600">{city.church_count} churches</span>
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
-        <a href="/churches" class="text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
-          View all
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </a>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {featuredChurches.map(church => (
-          <ChurchCard {...church} />
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <!-- Browse by Denomination -->
-  <section class="py-16 bg-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-12">
-        <h2 class="text-3xl font-serif font-bold text-gray-900">Browse by Denomination</h2>
-        <p class="text-gray-600 mt-2 max-w-2xl mx-auto">
-          Each tradition offers unique worship styles and theological perspectives. Explore to find what resonates with you.
-        </p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {denominations.map(denom => (
-          <DenominationCard {...denom} />
-        ))}
-      </div>
-
-      <div class="text-center mt-8">
-        <a href="/denominations" class="btn-secondary">
-          View All Denominations
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- What to Expect Section -->
-  <section class="py-16 bg-gradient-to-br from-cream-100 to-cream-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="text-center mb-12">
-        <h2 class="text-3xl font-serif font-bold text-gray-900">What to Expect</h2>
-        <p class="text-gray-600 mt-2">New to church? Here's what you need to know.</p>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="bg-white rounded-xl p-6 shadow-sm">
-          <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
-            <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h3 class="font-serif text-xl font-semibold text-gray-900 mb-2">Service Times</h3>
-          <p class="text-gray-600">
-            Most churches offer Sunday morning services between 9-11am. Many also have Saturday evening or Wednesday services. Arrive 10-15 minutes early your first visit.
-          </p>
+        <div class="card p-6 bg-cream-50">
+          <h2 class="font-serif text-2xl text-gray-900">Sunday start times we could read</h2>
+          <ul class="mt-4 space-y-2 text-sm">
+            {buckets.map((bucket) => (
+              <li class="flex justify-between gap-4 bg-white rounded-lg px-3 py-2 border border-cream-300">
+                <a href={`/map?time=${bucket.id}`} class="hover:text-primary-700">{bucket.label}</a>
+                <span class="tabular-nums text-gray-600">{bucket.count}</span>
+              </li>
+            ))}
+          </ul>
+          <p class="mt-4 text-sm text-gray-600">Times come from the church site. When a page did not state a clear Sunday start, the listing says so.</p>
         </div>
-
-        <div class="bg-white rounded-xl p-6 shadow-sm">
-          <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
-            <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-            </svg>
-          </div>
-          <h3 class="font-serif text-xl font-semibold text-gray-900 mb-2">What to Wear</h3>
-          <p class="text-gray-600">
-            Dress codes vary widely. Many contemporary churches welcome jeans and casual attire. Traditional churches may lean business casual. When in doubt, check the church's website.
-          </p>
-        </div>
-
-        <div class="bg-white rounded-xl p-6 shadow-sm">
-          <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-4">
-            <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-          </div>
-          <h3 class="font-serif text-xl font-semibold text-gray-900 mb-2">Kids & Families</h3>
-          <p class="text-gray-600">
-            Most churches offer children's programs during services. Nurseries for infants and toddlers are common. Look for "family-friendly" or "children's ministry" in church listings.
-          </p>
-        </div>
-      </div>
-
-      <div class="text-center mt-10">
-        <a href="/resources/first-visit" class="btn-primary">
-          Read Our First Visit Guide
-        </a>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA Section -->
-  <section class="py-16 bg-accent-800">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <h2 class="text-3xl font-serif font-bold text-white mb-4">
-        Is Your Church Listed?
-      </h2>
-      <p class="text-accent-200 text-lg mb-8 max-w-2xl mx-auto">
-        Help people in your community find your church. Add your listing for free and reach those searching for a church home.
-      </p>
-      <a href="/add-church" class="inline-flex items-center justify-center px-8 py-4 bg-white text-accent-800 font-semibold rounded-lg hover:bg-cream-100 transition-colors shadow-lg">
-        Add Your Church - It's Free
-      </a>
-    </div>
-  </section>
+      </section>
+    </>
+  ) : <DatabaseMissing />}
 </Layout>

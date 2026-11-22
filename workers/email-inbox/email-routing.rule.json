@@ -1,0 +1,6 @@
+{
+  "note": "Staged only. Do not apply this rule until Brian turns on Email Routing. Do not add an addresses field to wrangler.jsonc.",
+  "custom_address": "hello@findachurch.directory",
+  "action": "worker",
+  "worker": "church-directory-email-inbox"
+}

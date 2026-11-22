@@ -1,0 +1,60 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  flash?: string | null;
+  error?: string | null;
+}
+
+const { title, flash, error } = Astro.props;
+const links = [
+  { href: '/admin', label: 'Overview' },
+  { href: '/admin/submissions', label: 'Submissions' },
+  { href: '/admin/edits', label: 'Edits' },
+  { href: '/admin/checks', label: 'Checks' },
+  { href: '/admin/inbox', label: 'Inbox' },
+];
+const path = Astro.url.pathname.replace(/\/$/, '') || '/admin';
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title} | Desk</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,560;8..60,680&display=swap" rel="stylesheet" />
+  </head>
+  <body class="min-h-screen bg-cream-100 text-gray-800">
+    <header class="bg-white border-b border-cream-300">
+      <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p class="text-xs uppercase tracking-wide text-gray-500">Church directory desk</p>
+          <a href="/admin" class="font-serif text-2xl text-gray-900">Review queue</a>
+        </div>
+        <a href="/" class="text-sm text-primary-700 hover:text-primary-800">View the public site</a>
+      </div>
+      <nav class="max-w-6xl mx-auto px-4 pb-3 flex flex-wrap gap-2 text-sm">
+        {links.map((link) => (
+          <a
+            href={link.href}
+            class:list={[
+              'px-3 py-1.5 rounded-full border',
+              path === link.href ? 'bg-primary-700 text-white border-primary-700' : 'bg-white text-gray-700 border-cream-300',
+            ]}
+          >{link.label}</a>
+        ))}
+      </nav>
+    </header>
+    <main class="max-w-6xl mx-auto px-4 py-8">
+      {flash && <p class="mb-4 rounded-xl border border-cream-300 bg-white px-4 py-3 text-sm">{flash}</p>}
+      {error && <p class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">{error}</p>}
+      <slot />
+    </main>
+  </body>
+</html>

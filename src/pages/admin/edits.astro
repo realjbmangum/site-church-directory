@@ -1,0 +1,88 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import DatabaseMissing from '../../components/DatabaseMissing.astro';
+import { getDb } from '../../lib/db';
+import { describeChanges, errorMessage, flashMessage } from '../../lib/flash';
+import { listChurchOptions, listEdits } from '../../lib/queries';
+
+const db = getDb(Astro.locals);
+const status = Astro.url.searchParams.get('status') === 'approved' || Astro.url.searchParams.get('status') === 'rejected'
+  ? Astro.url.searchParams.get('status')!
+  : 'waiting';
+const rows = db ? await listEdits(db, status) : [];
+const churches = db ? await listChurchOptions(db) : [];
+---
+
+<AdminLayout title="Edits" flash={flashMessage(Astro.url.searchParams.get('done'))} error={errorMessage(Astro.url.searchParams.get('error'))}>
+  {db ? (
+    <>
+      <h1 class="font-serif text-3xl">Suggested edits</h1>
+      <p class="mt-2 text-sm text-gray-600">
+        <a href="/admin/edits">Waiting</a>
+        <span class="px-2">/</span>
+        <a href="/admin/edits?status=approved">Approved</a>
+        <span class="px-2">/</span>
+        <a href="/admin/edits?status=rejected">Rejected</a>
+      </p>
+      {rows.length === 0 ? <p class="mt-6 card p-4">No {status} edits.</p> : (
+        <ul class="mt-6 space-y-4">
+          {rows.map((row) => {
+            const changes = describeChanges(row.proposed_changes);
+            return (
+              <li class="card p-4">
+                <div class="flex flex-wrap justify-between gap-2">
+                  <h2 class="font-serif text-xl">{row.church_name || 'Unknown church'}</h2>
+                  <span class="badge">{row.status}</span>
+                </div>
+                {row.message && <p class="mt-2 text-sm text-gray-800">{row.message}</p>}
+                {changes.length > 0 && (
+                  <ul class="mt-3 text-sm bg-cream-100 rounded-lg px-3 py-2 space-y-1">
+                    {changes.map((line) => <li>{line}</li>)}
+                  </ul>
+                )}
+                {row.pending_asset_key && <p class="mt-2 text-sm">Photo or logo is attached and will be published only if you approve.</p>}
+                <p class="mt-2 text-sm text-gray-600">{row.contact_name || 'No name'} {row.contact_email ? `(${row.contact_email})` : ''}</p>
+                {row.status === 'waiting' && (
+                  <div class="mt-4 flex gap-2">
+                    <form method="post" action="/api/admin/edit">
+                      <input type="hidden" name="id" value={row.id} />
+                      <input type="hidden" name="action" value="approve" />
+                      <button class="btn-primary text-sm" type="submit">Approve</button>
+                    </form>
+                    <form method="post" action="/api/admin/edit">
+                      <input type="hidden" name="id" value={row.id} />
+                      <input type="hidden" name="action" value="reject" />
+                      <button class="btn-quiet text-sm" type="submit">Reject</button>
+                    </form>
+                  </div>
+                )}
+                {row.church_id && <p class="mt-3 text-sm"><a class="text-primary-800" href={`/church/${row.church_id}`}>Open the listing</a></p>}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <form method="post" action="/api/admin/photo" enctype="multipart/form-data" class="mt-10 card p-5 grid gap-3">
+        <h2 class="font-serif text-2xl">Propose a photo or logo</h2>
+        <p class="text-sm text-gray-600">The file waits on an edit row. Approving that row is what puts it on the church page.</p>
+        <label class="text-sm">Church
+          <select class="field mt-1" name="church_id" required>
+            <option value="">Choose</option>
+            {churches.map((church) => <option value={church.id}>{church.name}{church.city ? `, ${church.city}` : ''}</option>)}
+          </select>
+        </label>
+        <label class="text-sm">Use as
+          <select class="field mt-1" name="role">
+            <option value="photo">Photo</option>
+            <option value="logo">Logo</option>
+          </select>
+        </label>
+        <label class="text-sm">File (JPEG, PNG, or WebP, up to 4 MB)
+          <input class="mt-1 block" type="file" name="file" accept="image/jpeg,image/png,image/webp" required />
+        </label>
+        <button class="btn-secondary" type="submit">Add to the queue</button>
+      </form>
+    </>
+  ) : <DatabaseMissing />}
+</AdminLayout>

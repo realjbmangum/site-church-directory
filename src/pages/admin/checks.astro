@@ -1,0 +1,115 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import DatabaseMissing from '../../components/DatabaseMissing.astro';
+import { getDb } from '../../lib/db';
+import { describeChanges, errorMessage, flashMessage } from '../../lib/flash';
+import { listChecks, listChurchOptions } from '../../lib/queries';
+
+const db = getDb(Astro.locals);
+const requested = Astro.url.searchParams.get('status');
+const status = requested === 'applied' || requested === 'dismissed' ? requested : 'waiting';
+const rows = db ? await listChecks(db, status) : [];
+const churches = db ? await listChurchOptions(db) : [];
+---
+
+<AdminLayout title="Checks" flash={flashMessage(Astro.url.searchParams.get('done'))} error={errorMessage(Astro.url.searchParams.get('error'))}>
+  {db ? (
+    <>
+      <h1 class="font-serif text-3xl">Listing checks</h1>
+      <p class="mt-2 max-w-2xl text-gray-700">A check is a note that a listing may need an update, including a church that may have closed. Applying the row is the only way it changes the public page. Dismissing it leaves the listing alone.</p>
+      <p class="mt-3 text-sm text-gray-600">
+        <a href="/admin/checks">Waiting</a>
+        <span class="px-2">/</span>
+        <a href="/admin/checks?status=applied">Applied</a>
+        <span class="px-2">/</span>
+        <a href="/admin/checks?status=dismissed">Dismissed</a>
+      </p>
+
+      <form method="post" action="/api/admin/check" class="mt-6 card p-5 grid gap-3">
+        <h2 class="font-serif text-2xl">Record a check</h2>
+        <input type="hidden" name="action" value="create" />
+        <label class="text-sm">Church
+          <select class="field mt-1" name="church_id" required>
+            <option value="">Choose</option>
+            {churches.map((church) => <option value={church.id}>{church.name}{church.city ? `, ${church.city}` : ''}</option>)}
+          </select>
+        </label>
+        <label class="text-sm">What you found
+          <select class="field mt-1" name="classification">
+            <option value="unchanged">Unchanged</option>
+            <option value="minor_update">Minor update</option>
+            <option value="major_update">Major update</option>
+            <option value="likely_closed">Likely closed</option>
+            <option value="check_failed">Check failed</option>
+          </select>
+        </label>
+        <label class="text-sm">Reason
+          <textarea class="field mt-1" name="reason" required rows="3" maxlength="1000"></textarea>
+        </label>
+        <label class="text-sm">Source URL
+          <input class="field mt-1" name="evidence_url" type="url" maxlength="400" />
+        </label>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <label class="text-sm">New service times
+            <textarea class="field mt-1" name="service_times" rows="2"></textarea>
+          </label>
+          <label class="text-sm">New phone
+            <input class="field mt-1" name="phone" />
+          </label>
+          <label class="text-sm">New website
+            <input class="field mt-1" name="website" />
+          </label>
+          <label class="text-sm">Set status
+            <select class="field mt-1" name="status">
+              <option value="">Leave as is</option>
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+            </select>
+          </label>
+        </div>
+        <label class="text-sm">Closed reason, if you are marking it closed
+          <input class="field mt-1" name="closed_reason" maxlength="300" />
+        </label>
+        <button class="btn-secondary" type="submit">Add to the queue</button>
+      </form>
+
+      {rows.length === 0 ? <p class="mt-6 card p-4">No {status} checks.</p> : (
+        <ul class="mt-6 space-y-4">
+          {rows.map((row) => {
+            const changes = describeChanges(row.proposed_changes);
+            return (
+              <li class="card p-4">
+                <div class="flex flex-wrap justify-between gap-2">
+                  <h2 class="font-serif text-xl">{row.church_name || row.church_id}</h2>
+                  <span class="badge">{row.classification.replaceAll('_', ' ')}</span>
+                </div>
+                <p class="mt-2 text-sm">{row.reason}</p>
+                {row.evidence_url && <p class="mt-2 text-sm"><a class="text-primary-800" href={row.evidence_url}>Source</a></p>}
+                {changes.length > 0 && (
+                  <ul class="mt-3 text-sm bg-cream-100 rounded-lg px-3 py-2">
+                    {changes.map((line) => <li>{line}</li>)}
+                  </ul>
+                )}
+                {row.status === 'waiting' && (
+                  <div class="mt-4 flex gap-2">
+                    <form method="post" action="/api/admin/check">
+                      <input type="hidden" name="id" value={row.id} />
+                      <input type="hidden" name="action" value="apply" />
+                      <button class="btn-primary text-sm" type="submit">Apply</button>
+                    </form>
+                    <form method="post" action="/api/admin/check">
+                      <input type="hidden" name="id" value={row.id} />
+                      <input type="hidden" name="action" value="dismiss" />
+                      <button class="btn-quiet text-sm" type="submit">Dismiss</button>
+                    </form>
+                  </div>
+                )}
+                {row.church_slug && <p class="mt-3 text-sm"><a class="text-primary-800" href={`/church/${row.church_slug}`}>Open the listing</a></p>}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </>
+  ) : <DatabaseMissing />}
+</AdminLayout>
