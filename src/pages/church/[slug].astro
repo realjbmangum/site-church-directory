@@ -51,95 +51,105 @@ const jsonLd = church
 <Layout title={church?.name ?? 'Church'} path={path} description={description} noindex={closed} jsonLd={jsonLd ?? undefined}>
   {db ? (
     church ? (
-      <article class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        <p class="text-sm text-gray-600">
-          <a href="/charlotte" class="hover:text-primary-700">Charlotte</a>
+      <article class="page wrap">
+        <nav class="crumbs" aria-label="Breadcrumb">
+          <a href="/charlotte">Charlotte</a>
           {church.city_id && church.city && (
             <>
-              <span class="px-1">/</span>
-              <a href={`/city/${church.city_id}`} class="hover:text-primary-700">{church.city}</a>
+              <span aria-hidden="true">/</span>
+              <a href={`/city/${church.city_id}`}>{church.city}</a>
             </>
           )}
           {church.family_slug && (
             <>
-              <span class="px-1">/</span>
-              <a href={`/denomination/${church.family_slug}`} class="hover:text-primary-700">{church.family_name}</a>
+              <span aria-hidden="true">/</span>
+              <a href={`/denomination/${church.family_slug}`}>{church.family_name}</a>
             </>
           )}
-        </p>
-        <div class="mt-4 grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        </nav>
+        <header class="church-head">
           <div>
-            {photo && <img src={photo} alt="" class="w-full max-h-80 object-cover rounded-2xl mb-6" />}
-            <div class="flex flex-wrap items-center gap-2">
+            {photo && <img src={photo} alt="" class="stop-photo" style="height: 16rem; margin-bottom: 1rem; border-radius: 12px" />}
+            <h1>{church.name}</h1>
+            {church.campus_name && <p class="meta" style="margin-top: 0.4rem">Campus: {church.campus_name}</p>}
+            <p class="meta" style="margin-top: 0.35rem">{placeLine(church)}</p>
+            <p class="chip-row">
               {church.family_name && <span class="badge">{church.family_name}</span>}
               {church.historically_black_tradition ? <span class="badge">Historically Black tradition</span> : null}
-              {closed && <span class="badge">Marked closed</span>}
-            </div>
-            <h1 class="mt-3 font-serif text-4xl text-gray-900">{church.name}</h1>
-            {church.campus_name && <p class="mt-1 text-gray-700">Campus: {church.campus_name}</p>}
-            <p class="mt-2 text-gray-600">{placeLine(church)}</p>
+              {closed && <span class="badge badge-closed">Marked closed</span>}
+            </p>
+          </div>
+          {church.earliest_sunday_time && (
+            <p>
+              <span class="proof-time">{church.earliest_sunday_time}</span>
+              <span class="time-caption" style="display: block; margin-top: 0.35rem">Earliest Sunday</span>
+            </p>
+          )}
+        </header>
 
-            {closed && (
-              <p class="mt-4 card p-4 bg-cream-50 text-gray-800">
-                This church is marked closed{church.closed_reason ? `: ${church.closed_reason}` : ''}. The listing stays so the record is not lost.
-              </p>
-            )}
+        {closed && (
+          <p class="notice">
+            This church is marked closed{church.closed_reason ? `: ${church.closed_reason}` : ''}. The listing stays so the record is not lost.
+          </p>
+        )}
 
-            <section class="card p-5 mt-6">
-              <h2 class="font-serif text-2xl">Service times</h2>
-              <p class="mt-1 text-sm text-gray-600">Shown the way the church wrote them.</p>
+        <div class="detail-grid" style="margin-top: 1.75rem">
+          <div>
+            <section class="panel">
+              <h2>Service times</h2>
+              <p class="quiet">Shown the way the church wrote them.</p>
               {lines ? (
-                <ul class="mt-4 space-y-2">
-                  {lines.map((line) => <li class="bg-cream-100 rounded-lg px-3 py-2">{line}</li>)}
+                <ul class="time-list">
+                  {lines.map((line) => <li>{line}</li>)}
                 </ul>
               ) : (
-                <p class="mt-4 text-gray-800 whitespace-pre-wrap">{church.service_times || 'No service time was listed on the page we checked.'}</p>
+                <p style="margin-top: 0.8rem; white-space: pre-wrap">{church.service_times || 'No service time was listed on the page we checked.'}</p>
               )}
-              {church.earliest_sunday_time && <p class="mt-3 text-sm text-gray-600">Earliest Sunday time we could read: {church.earliest_sunday_time}</p>}
+              {church.earliest_sunday_time && <p class="quiet" style="margin-top: 0.8rem">Earliest Sunday time we could read: {church.earliest_sunday_time}</p>}
             </section>
 
-            <section class="card p-5 mt-4">
-              <h2 class="font-serif text-2xl">Last verified</h2>
+            <section class="panel" style="margin-top: 1rem">
+              <h2>Last verified</h2>
               {proof || church.proof_quote ? (
                 <>
-                  <p class="mt-2 text-gray-700">{checked ? `Last checked ${checked}.` : 'Checked against the church website.'} The quote below is copied from that page.</p>
-                  {church.proof_quote && <blockquote class="mt-4 bg-cream-100 rounded-xl px-4 py-3 text-gray-900">{church.proof_quote}</blockquote>}
-                  {proofLabel(church.proof_strength) && <p class="mt-3 text-sm text-gray-600">{proofLabel(church.proof_strength)}</p>}
-                  {proof && <p class="mt-3"><a class="text-primary-800 font-medium" href={proof} rel="noopener noreferrer">Read the source</a></p>}
+                  <p class="quiet" style="margin-top: 0.45rem">{checked ? `Last checked ${checked}.` : 'Checked against the church website.'} The quote below is copied from that page.</p>
+                  {church.proof_quote && <blockquote class="proof-quote">{church.proof_quote}</blockquote>}
+                  {proofLabel(church.proof_strength) && <p class="quiet" style="margin-top: 0.75rem">{proofLabel(church.proof_strength)}</p>}
+                  {proof && <p style="margin-top: 0.75rem"><a class="btn-secondary" href={proof} rel="noopener noreferrer">Read the source</a></p>}
                 </>
               ) : (
-                <p class="mt-2 text-gray-700">This listing has not been checked against the church website yet. It came in through the desk and is waiting on a source quote.</p>
+                <p class="quiet" style="margin-top: 0.45rem">This listing has not been checked against the church website yet. It came in through the desk and is waiting on a source quote.</p>
               )}
             </section>
 
-            <section class="card p-5 mt-4">
-              <h2 class="font-serif text-2xl">Denomination and languages</h2>
-              <dl class="mt-3 grid gap-3 sm:grid-cols-2 text-sm">
-                <div><dt class="text-gray-500">Family</dt><dd class="text-gray-900">{church.family_name || 'Not stated'}</dd></div>
-                <div><dt class="text-gray-500">Specific body</dt><dd class="text-gray-900">{church.body_name || 'Not stated'}</dd></div>
-                <div><dt class="text-gray-500">Languages</dt><dd class="text-gray-900">{church.languages_text || 'Not listed'}</dd></div>
-                {church.denomination_evidence && <div><dt class="text-gray-500">How we know the body</dt><dd class="text-gray-900">{church.denomination_evidence}</dd></div>}
+            <section class="panel" style="margin-top: 1rem">
+              <h2>Denomination and languages</h2>
+              <dl class="dl-grid">
+                <div><dt>Family</dt><dd>{church.family_name || 'Not stated'}</dd></div>
+                <div><dt>Specific body</dt><dd>{church.body_name || 'Not stated'}</dd></div>
+                <div><dt>Languages</dt><dd>{church.languages_text || 'Not listed'}</dd></div>
+                {church.denomination_evidence && <div><dt>How we know the body</dt><dd>{church.denomination_evidence}</dd></div>}
               </dl>
               {church.body_slug && church.family_slug && (
-                <p class="mt-4 text-sm"><a class="text-primary-800" href={`/denomination/${church.family_slug}/${church.body_slug}`}>More {church.body_name} churches</a></p>
+                <p style="margin-top: 1rem"><a class="btn-quiet" href={`/denomination/${church.family_slug}/${church.body_slug}`}>More {church.body_name} churches</a></p>
               )}
             </section>
 
-            <p class="mt-6 text-sm"><a class="text-primary-800" href={`/church/${church.slug}/suggest`}>Suggest a correction</a></p>
+            <p style="margin-top: 1.25rem"><a class="btn-secondary" href={`/church/${church.slug}/suggest`}>Suggest a correction</a></p>
           </div>
 
-          <aside class="card p-5 h-fit lg:sticky lg:top-24">
-            {logo && <img src={logo} alt="" class="h-16 w-auto mb-4" />}
-            <h2 class="font-serif text-xl">Visit</h2>
-            <div class="mt-3 space-y-3 text-sm">
-              {church.address && <p>{church.address}<br />{placeLine(church)}</p>}
-              {phone && church.phone && <p><a class="text-primary-800" href={phone}>{church.phone}</a></p>}
-              {website && <p><a class="text-primary-800" href={website} rel="noopener noreferrer">Church website</a></p>}
+          <aside class="panel visit-panel">
+            {logo && <img src={logo} alt="" style="height: 4rem; width: auto; margin-bottom: 0.8rem" />}
+            <h2>Visit</h2>
+            <div class="meta" style="margin-top: 0.75rem; display: grid; gap: 0.7rem">
+              {church.address && <p style="color: var(--ink)">{church.address}<br />{placeLine(church)}</p>}
+              {phone && church.phone && <p><a href={phone} style="color: var(--spruce-deep); font-weight: 700">{church.phone}</a></p>}
+              {website && <p><a href={website} rel="noopener noreferrer" style="color: var(--spruce-deep); font-weight: 700">Church website</a></p>}
             </div>
             {church.latitude != null && church.longitude != null && (
-              <div id="detail-map" class="mt-4 h-48 rounded-xl overflow-hidden border border-cream-300" data-lat={church.latitude} data-lng={church.longitude} data-name={church.name}></div>
+              <div id="detail-map" class="detail-map" data-lat={church.latitude} data-lng={church.longitude} data-name={church.name}></div>
             )}
-            {directions && <p class="mt-4"><a class="btn-primary w-full" href={directions} rel="noopener noreferrer">Directions</a></p>}
+            {directions && <p style="margin-top: 1rem"><a class="btn-primary" style="width: 100%" href={directions} rel="noopener noreferrer">Directions</a></p>}
           </aside>
         </div>
         <script>
@@ -153,9 +163,9 @@ const jsonLd = church
         </script>
       </article>
     ) : (
-      <div class="max-w-xl mx-auto px-4 py-20">
-        <h1 class="font-serif text-3xl">That church is not in the directory.</h1>
-        <p class="mt-3"><a class="text-primary-700" href="/map">Back to the map</a></p>
+      <div class="page wrap">
+        <h1>That church is not in the directory.</h1>
+        <p class="lede"><a class="btn-secondary" href="/map">Back to the map</a></p>
       </div>
     )
   ) : <DatabaseMissing />}

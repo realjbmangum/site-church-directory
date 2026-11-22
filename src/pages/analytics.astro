@@ -66,6 +66,7 @@ const futureRows = [
   ['Outreach', future?.outreach ?? 0],
 ] as const;
 const liveFilters = new Set([1, 2, 5, 6]);
+const columns = [['name','Church'],['family','Family'],['body','Body'],['city','City'],['zip','ZIP'],['languages','Languages'],['sunday','Sunday'],['proof','Proof']] as const;
 ---
 
 <Layout
@@ -74,38 +75,44 @@ const liveFilters = new Set([1, 2, 5, 6]);
   description="How the Charlotte pilot breaks down by denomination family, city, language, and Sunday service time."
 >
   {db ? (
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-      <h1 class="font-serif text-4xl text-gray-900">What kinds of churches are here</h1>
-      <p class="mt-3 max-w-2xl text-gray-700">Counts use the open listings in the Charlotte pilot. A church in more than one language is counted once for each language.</p>
-      <div class="mt-8 grid gap-4 lg:grid-cols-2">
+    <div class="page wrap">
+      <h1>What kinds of churches are here</h1>
+      <p class="lede">Counts use the open listings in the Charlotte pilot. A church in more than one language is counted once for each language.</p>
+      <div class="chart-grid" style="margin-top: 1.75rem">
         <BarList title="Denomination family" rows={byFamily} />
         <BarList title="City" rows={byCity} />
         <BarList title="Language" rows={byLanguage} />
         <BarList title="Earliest Sunday service" rows={byTime} />
       </div>
 
-      <section class="mt-10 card p-5">
-        <div class="flex flex-wrap gap-3 items-end">
-          <h2 class="font-serif text-2xl flex-1">Every open church</h2>
-          <p id="table-count" class="text-sm text-gray-600">{churches.length} churches</p>
+      <section class="section panel">
+        <div class="section-head">
+          <h2>Every open church</h2>
+          <p id="table-count" class="count-line">{churches.length} churches</p>
         </div>
-        <div class="mt-4 grid gap-3 md:grid-cols-3">
-          <input id="table-filter" class="field" placeholder="Filter this table" />
-          <select id="table-family" class="field">
-            <option value="">Any family</option>
-            {familyOptions.map((name) => <option value={name}>{name}</option>)}
-          </select>
-          <select id="table-city" class="field">
-            <option value="">Any city</option>
-            {cityOptions.map((name) => <option value={name}>{name}</option>)}
-          </select>
+        <div class="filter-grid" style="margin-top: 1rem">
+          <label>Filter this table
+            <input id="table-filter" class="field" placeholder="Name, body, language" />
+          </label>
+          <label>Family
+            <select id="table-family" class="field">
+              <option value="">Any family</option>
+              {familyOptions.map((name) => <option value={name}>{name}</option>)}
+            </select>
+          </label>
+          <label>City
+            <select id="table-city" class="field">
+              <option value="">Any city</option>
+              {cityOptions.map((name) => <option value={name}>{name}</option>)}
+            </select>
+          </label>
         </div>
-        <div class="mt-4 overflow-x-auto">
-          <table id="church-table" class="w-full text-sm text-left">
-            <thead class="text-gray-600">
+        <div class="table-scroll">
+          <table id="church-table" class="data-table">
+            <thead>
               <tr>
-                {[['name','Church'],['family','Family'],['body','Body'],['city','City'],['zip','ZIP'],['languages','Languages'],['sunday','Sunday'],['proof','Proof']].map(([key, label]) => (
-                  <th class="px-3 py-2 font-medium"><button type="button" data-sort={key} class="hover:text-primary-700">{label}</button></th>
+                {columns.map(([key, label]) => (
+                  <th scope="col"><button type="button" data-sort={key} aria-label={`Sort by ${label}`}>{label}</button></th>
                 ))}
               </tr>
             </thead>
@@ -121,30 +128,39 @@ const liveFilters = new Set([1, 2, 5, 6]);
         </script>
       </section>
 
-      <section class="mt-10 card p-5">
-        <h2 class="font-serif text-2xl">Saved for later</h2>
-        <p class="mt-2 text-gray-700">These columns exist so we can filter on them later. They are empty until a church states the fact on its own site. We do not guess.</p>
-        <ul class="mt-4 grid sm:grid-cols-2 gap-2 text-sm">
+      <section class="section panel">
+        <h2>Saved for later</h2>
+        <p class="quiet" style="margin-top: 0.4rem">These columns exist so we can filter on them later. They are empty until a church states the fact on its own site. We do not guess.</p>
+        <ul class="legend" style="margin-top: 0.8rem">
           {futureRows.map(([label, count]) => (
-            <li class="bg-cream-100 rounded-lg px-3 py-2 flex justify-between"><span>{label}</span><span>{count} filled in</span></li>
+            <li>
+              <span style="display: flex; justify-content: space-between; gap: 1rem; min-height: 48px; align-items: center; border-bottom: 1px solid var(--line)">
+                <span>{label}</span>
+                <span class="legend-meta">{count} filled in</span>
+              </span>
+            </li>
           ))}
         </ul>
       </section>
 
-      <section class="mt-10">
-        <h2 class="font-serif text-2xl">What people search for</h2>
-        <p class="mt-2 text-gray-600 max-w-2xl">Ranks come from the research file that shipped with the pilot. A live filter is on the map today. The rest wait on source text from the church.</p>
-        <div class="mt-4 overflow-x-auto card">
-          <table class="w-full text-sm">
-            <thead class="text-left text-gray-600">
-              <tr><th class="px-3 py-2">Rank</th><th class="px-3 py-2">Category</th><th class="px-3 py-2">In this pilot</th></tr>
+      <section class="section">
+        <h2>What people search for</h2>
+        <p class="quiet" style="margin-top: 0.4rem; max-width: 68ch">Ranks come from the research file that shipped with the pilot. A live filter is on the map today. The rest wait on source text from the church.</p>
+        <div class="table-scroll panel" style="padding: 0.25rem 0.4rem">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Rank</th>
+                <th scope="col">Category</th>
+                <th scope="col">In this pilot</th>
+              </tr>
             </thead>
             <tbody>
               {intents.map((intent) => (
-                <tr class="border-t border-cream-200">
-                  <td class="px-3 py-2 tabular-nums">{intent.rank}</td>
-                  <td class="px-3 py-2">{intent.category}</td>
-                  <td class="px-3 py-2">{liveFilters.has(intent.rank) ? 'On the map' : intent.recommendation === 'Skip' || (intent.recommendation || '').startsWith('Skip') ? 'Not a filter' : 'Column ready, not filled in'}</td>
+                <tr>
+                  <td class="tabular-nums">{intent.rank}</td>
+                  <td>{intent.category}</td>
+                  <td>{liveFilters.has(intent.rank) ? 'On the map' : intent.recommendation === 'Skip' || (intent.recommendation || '').startsWith('Skip') ? 'Not a filter' : 'Column ready, not filled in'}</td>
                 </tr>
               ))}
             </tbody>

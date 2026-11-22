@@ -4,49 +4,46 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Warm, welcoming color palette for church directory
         primary: {
-          50: '#fdf8f6',
-          100: '#f8ede8',
-          200: '#f0d8cd',
-          300: '#e5bba8',
-          400: '#d89578',
-          500: '#c97652', // Main warm terracotta
-          600: '#b85f3e',
-          700: '#9a4c33',
-          800: '#7f3f2e',
-          900: '#6a362a',
-          950: '#3a1a13',
+          50: '#e7f3ee',
+          100: '#d3ebe1',
+          200: '#a8d7c4',
+          300: '#6fb89a',
+          400: '#3d9474',
+          500: '#1f7356',
+          600: '#0d4f3c',
+          700: '#0c4535',
+          800: '#08382b',
+          900: '#06281f',
+          950: '#031610',
         },
-        // Complementary deep blue for trust/faith
-        accent: {
-          50: '#f0f5ff',
-          100: '#e0eaff',
-          200: '#c7d7fe',
-          300: '#a4bcfc',
-          400: '#7f97f8',
-          500: '#5a6ff1',
-          600: '#4550e5',
-          700: '#3840ca', // Deep blue
-          800: '#3037a3',
-          900: '#2d3481',
-          950: '#1c1f4b',
-        },
-        // Warm neutral background
         cream: {
-          50: '#fefdfb',
-          100: '#fdf9f3',
-          200: '#faf3e6',
-          300: '#f5e8d3',
-          400: '#eed9b8',
-          500: '#e5c69a',
-        }
+          50: '#fbfcfb',
+          100: '#f2f4f1',
+          200: '#e7ebe6',
+          300: '#d3dad5',
+          400: '#b7c2bb',
+          500: '#8fa099',
+        },
+        ink: {
+          DEFAULT: '#14211c',
+          soft: '#3a4a43',
+        },
       },
       fontFamily: {
-        serif: ['"Source Serif 4"', 'Georgia', 'serif'],
-        sans: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+        display: ['"Familjen Grotesk"', '"Avenir Next"', '"Segoe UI"', 'sans-serif'],
+        sans: ['"Atkinson Hyperlegible"', '"Segoe UI"', 'sans-serif'],
+        serif: ['"Familjen Grotesk"', '"Avenir Next"', '"Segoe UI"', 'sans-serif'],
+      },
+      borderRadius: {
+        sm: '6px',
+        md: '8px',
+        lg: '12px',
+      },
+      boxShadow: {
+        lift: '0 10px 28px rgba(20, 33, 28, 0.1)',
       },
     },
   },
   plugins: [],
-}
+};

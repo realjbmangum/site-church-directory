@@ -68,13 +68,7 @@ export function mountMap(mapEl: HTMLElement, listEl: HTMLElement, countEl: HTMLE
   const markers = new Map<string, L.CircleMarker>();
   for (const church of churches) {
     if (church.lat == null || church.lng == null) continue;
-    const marker = L.circleMarker([church.lat, church.lng], {
-      radius: 7,
-      color: '#9a4c33',
-      weight: 2,
-      fillColor: '#c97652',
-      fillOpacity: 0.92,
-    });
+    const marker = L.circleMarker([church.lat, church.lng], pinStyle(false));
     marker.bindPopup(
       `<strong>${escapeHtml(church.name)}</strong><br>${escapeHtml(church.family || 'Denomination not stated')}<br>${escapeHtml(church.sunday || 'Sunday time not listed')}<br><a href="/church/${encodeURIComponent(church.slug)}">Open the listing</a>`,
     );
@@ -128,12 +122,14 @@ export function mountMap(mapEl: HTMLElement, listEl: HTMLElement, countEl: HTMLE
     countEl.textContent = `${visible.length} ${visible.length === 1 ? 'church' : 'churches'}`;
     listEl.innerHTML = visible
       .map((church) => {
-        const pin = church.lat == null ? '<span class="text-gray-500">No map pin yet</span>' : '';
-        return `<a class="block rounded-xl border border-cream-300 bg-white px-3 py-3 hover:border-primary-300" href="/church/${encodeURIComponent(church.slug)}">
-          <span class="block font-medium text-gray-900">${escapeHtml(church.name)}</span>
-          <span class="block text-sm text-gray-600">${escapeHtml([church.city, church.family].filter(Boolean).join(', ') || 'Charlotte')}</span>
-          <span class="block text-sm text-gray-600">${escapeHtml(church.sunday || 'Sunday time not listed')}</span>
-          ${pin}
+        const pin = church.lat == null ? '<span class="schedule-meta">No map pin yet</span>' : '';
+        return `<a class="schedule-row" data-slug="${escapeHtml(church.slug)}" href="/church/${encodeURIComponent(church.slug)}">
+          <span class="schedule-time">${escapeHtml(church.sunday || 'Time not listed')}</span>
+          <span>
+            <span class="schedule-name">${escapeHtml(church.name)}</span>
+            <span class="schedule-meta">${escapeHtml([church.city, church.family].filter(Boolean).join(', ') || 'Charlotte')}</span>
+            ${pin}
+          </span>
         </a>`;
       })
       .join('');
@@ -146,6 +142,24 @@ export function mountMap(mapEl: HTMLElement, listEl: HTMLElement, countEl: HTMLE
     const next = query ? `${window.location.pathname}?${query}` : window.location.pathname;
     window.history.replaceState(null, '', next);
   }
+
+  function highlight(slug: string | null) {
+    for (const [key, marker] of markers) marker.setStyle(pinStyle(key === slug));
+  }
+
+  listEl.addEventListener('mouseover', (event) => {
+    const row = (event.target as HTMLElement).closest<HTMLElement>('[data-slug]');
+    highlight(row?.dataset.slug ?? null);
+  });
+  listEl.addEventListener('mouseout', (event) => {
+    const next = (event.relatedTarget as HTMLElement | null)?.closest?.('[data-slug]');
+    if (!next) highlight(null);
+  });
+  listEl.addEventListener('focusin', (event) => {
+    const row = (event.target as HTMLElement).closest<HTMLElement>('[data-slug]');
+    highlight(row?.dataset.slug ?? null);
+  });
+  listEl.addEventListener('focusout', () => highlight(null));
 
   form?.addEventListener('input', render);
   form?.addEventListener('submit', (event) => {
@@ -165,14 +179,18 @@ export function mountDetail(el: HTMLElement, lat: number, lng: number, name: str
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
-  L.circleMarker([lat, lng], {
-    radius: 9,
-    color: '#9a4c33',
-    weight: 2,
-    fillColor: '#c97652',
-    fillOpacity: 0.95,
-  }).addTo(map).bindTooltip(escapeHtml(name));
+  L.circleMarker([lat, lng], pinStyle(true)).addTo(map).bindTooltip(escapeHtml(name));
   window.setTimeout(() => map.invalidateSize(), 200);
+}
+
+function pinStyle(active: boolean): L.CircleMarkerOptions {
+  return {
+    radius: active ? 10 : 7,
+    color: '#08382b',
+    weight: 2,
+    fillColor: active ? '#0d4f3c' : '#1f7356',
+    fillOpacity: 0.95,
+  };
 }
 
 function escapeHtml(value: string): string {
