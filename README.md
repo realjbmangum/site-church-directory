@@ -2,7 +2,7 @@
 
 Charlotte pilot of a church directory. Listings are checked against each church’s own website. The public site reads Cloudflare D1. Photos and logos go in R2. A review desk is the only way a public listing changes.
 
-This repo does not deploy, attach a domain, or write to the remote database.
+The site Worker deploys from `wrangler.jsonc`. This repo does not attach a domain or write to the remote database.
 
 ## Run it locally
 
@@ -41,6 +41,6 @@ Brian still has to approve:
 2. Cloudflare Access policy for `/admin`, `/admin/*`, `/api/admin`, and `/api/admin/*`, plus the `CF_ACCESS_TEAM_DOMAIN` variable.
 3. The domain for https://findachurch.directory (or whichever host should be canonical).
 4. Email routing for the inbox worker. See `workers/email-inbox/ACTIVATION.md`. Do not deploy that worker until the rule is chosen.
-5. A production deploy of the site worker. This pull request does not deploy.
+5. A production deploy of the site Worker is approved. Workers Builds runs `npm run build` and `npx wrangler deploy`. Do not attach a domain from this repo.
 
 R2 bucket `church-directory-assets` is bound as `ASSETS_BUCKET`. It stays empty until a photo is approved on the desk.

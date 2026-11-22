@@ -1,6 +1,13 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "church-directory",
+  // @astrojs/cloudflare 12.6 writes the Worker to dist/_worker.js/index.js
+  // and copies client files into dist/. The handler fetches those files with env.ASSETS.
+  "main": "./dist/_worker.js/index.js",
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist"
+  },
   "compatibility_date": "2026-11-22",
   "compatibility_flags": ["nodejs_compat"],
   "observability": {
@@ -14,9 +21,8 @@
       "head_sampling_rate": 1
     }
   },
-  // Existing resources. Do not provision new ones from this file.
-  // Do not deploy this Worker, attach a domain, or apply migrations with --remote
-  // until Brian reviews the pull request.
+  // Existing D1 and R2 resources. Deploy of this Worker is approved.
+  // Do not provision new resources, attach a domain, or apply migrations with --remote from this file.
   "d1_databases": [
     {
       "binding": "DB",
