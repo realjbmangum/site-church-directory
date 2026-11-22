@@ -33,20 +33,20 @@ export function mountTable(table: HTMLTableElement, rows: Row[]): void {
       .sort((a, b) => a[sortKey].localeCompare(b[sortKey]) * direction);
     tbody.innerHTML = visible
       .map(
-        (row) => `<tr class="border-t border-cream-200">
-          <td class="px-3 py-2"><a class="text-primary-800 hover:underline" href="/church/${encodeURIComponent(row.slug)}">${escapeHtml(row.name)}</a></td>
-          <td class="px-3 py-2">${escapeHtml(row.family)}</td>
-          <td class="px-3 py-2">${escapeHtml(row.body)}</td>
-          <td class="px-3 py-2">${escapeHtml(row.city)}</td>
-          <td class="px-3 py-2">${escapeHtml(row.zip)}</td>
-          <td class="px-3 py-2">${escapeHtml(row.languages)}</td>
-          <td class="px-3 py-2">${escapeHtml(row.sunday || 'Not listed')}</td>
-          <td class="px-3 py-2">${escapeHtml(row.proof)}</td>
+        (row) => `<tr>
+          <td><a href="/church/${encodeURIComponent(row.slug)}">${escapeHtml(row.name)}</a></td>
+          <td>${escapeHtml(row.family)}</td>
+          <td>${escapeHtml(row.body)}</td>
+          <td>${escapeHtml(row.city)}</td>
+          <td>${escapeHtml(row.zip)}</td>
+          <td>${escapeHtml(row.languages)}</td>
+          <td>${escapeHtml(row.sunday || 'Not listed')}</td>
+          <td>${escapeHtml(row.proof)}</td>
         </tr>`,
       )
       .join('');
     const count = document.querySelector('#table-count');
-    if (count) count.textContent = `${visible.length} churches`;
+    if (count) count.textContent = `${visible.length} ${visible.length === 1 ? 'church' : 'churches'}`;
   }
 
   table.querySelectorAll<HTMLButtonElement>('[data-sort]').forEach((button) => {

@@ -22,23 +22,23 @@ const present = bodies.filter((body) => body.church_count > 0);
 >
   {db ? (
     family ? (
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-        <p class="text-sm text-gray-600"><a href="/denomination" class="hover:text-primary-700">Denominations</a></p>
-        <h1 class="mt-2 font-serif text-4xl text-gray-900">{family.name}</h1>
-        <p class="mt-3 text-gray-700">{family.church_count} {family.church_count === 1 ? 'church is' : 'churches are'} open in this family.</p>
+      <div class="page wrap">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/denomination">Denominations</a></nav>
+        <h1 style="margin-top: 0.6rem">{family.name}</h1>
+        <p class="lede">{family.church_count} {family.church_count === 1 ? 'church is' : 'churches are'} open in this family.</p>
         {present.length > 0 && (
-          <div class="mt-6 flex flex-wrap gap-2">
+          <div class="chip-row">
             {present.map((body) => (
-              <a href={`/denomination/${family.slug}/${body.slug}`} class="badge text-sm px-3 py-1">
+              <a href={`/denomination/${family.slug}/${body.slug}`} class="chip">
                 {body.name} ({body.church_count}){body.historically_black_tradition ? ', Historically Black tradition' : ''}
               </a>
             ))}
           </div>
         )}
         {churches.length === 0 ? (
-          <p class="mt-8 card p-5 text-gray-700">None of the churches in the Charlotte pilot are in this family yet. The family stays in the taxonomy so later cities can use it.</p>
+          <p class="notice">None of the churches in the Charlotte pilot are in this family yet. The family stays in the taxonomy so later cities can use it.</p>
         ) : (
-          <div class="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div class="card-grid cols-3">
             {churches.map((church) => (
               <ChurchCard slug={church.slug} name={church.name} familyName={church.family_name} bodyName={church.body_name} city={church.city} state={church.state} sunday={church.earliest_sunday_time} languages={church.languages_text} serviceTimes={church.service_times} photoKey={church.photo_key} historicallyBlack={Boolean(church.historically_black_tradition)} />
             ))}
@@ -46,9 +46,9 @@ const present = bodies.filter((body) => body.church_count > 0);
         )}
       </div>
     ) : (
-      <div class="max-w-xl mx-auto px-4 py-20">
-        <h1 class="font-serif text-3xl">That denomination family is not in the taxonomy.</h1>
-        <p class="mt-3"><a class="text-primary-700" href="/denomination">Back to families</a></p>
+      <div class="page wrap">
+        <h1>That denomination family is not in the taxonomy.</h1>
+        <p class="lede"><a class="btn-secondary" href="/denomination">Back to families</a></p>
       </div>
     )
   ) : <DatabaseMissing />}

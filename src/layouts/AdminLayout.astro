@@ -28,25 +28,21 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/admin';
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,560;8..60,680&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Familjen+Grotesk:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet" />
   </head>
   <body class="min-h-screen bg-cream-100 text-gray-800">
     <header class="bg-white border-b border-cream-300">
       <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p class="text-xs uppercase tracking-wide text-gray-500">Church directory desk</p>
-          <a href="/admin" class="font-serif text-2xl text-gray-900">Review queue</a>
-        </div>
-        <a href="/" class="text-sm text-primary-700 hover:text-primary-800">View the public site</a>
+        <a href="/admin" class="wordmark" style="color: var(--ink)">Review desk</a>
+        <a href="/" class="btn-quiet">View the public site</a>
       </div>
-      <nav class="max-w-6xl mx-auto px-4 pb-3 flex flex-wrap gap-2 text-sm">
+      <nav class="max-w-6xl mx-auto px-4 pb-4 flex flex-wrap gap-2" aria-label="Desk">
         {links.map((link) => (
           <a
             href={link.href}
-            class:list={[
-              'px-3 py-1.5 rounded-full border',
-              path === link.href ? 'bg-primary-700 text-white border-primary-700' : 'bg-white text-gray-700 border-cream-300',
-            ]}
+            class:list={['chip', path === link.href && 'btn-primary']}
+            aria-current={path === link.href ? 'page' : undefined}
+            style={path === link.href ? 'color: var(--on-spruce)' : undefined}
           >{link.label}</a>
         ))}
       </nav>

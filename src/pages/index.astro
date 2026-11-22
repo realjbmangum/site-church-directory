@@ -3,14 +3,21 @@ import Layout from '../layouts/Layout.astro';
 import ChurchCard from '../components/ChurchCard.astro';
 import DatabaseMissing from '../components/DatabaseMissing.astro';
 import { getDb } from '../lib/db';
-import { listCities, listFamilies, listOpenChurches } from '../lib/queries';
+import { listCities, listFamilies, listLanguages, listOpenChurches } from '../lib/queries';
+import { formatChecked, placeLine, snippet } from '../lib/format';
 import { TIME_BUCKETS, timeBucket } from '@shared/time';
 
 const db = getDb(Astro.locals);
 const churches = db ? await listOpenChurches(db) : [];
 const families = db ? (await listFamilies(db)).filter((family) => family.church_count > 0) : [];
 const cities = db ? (await listCities(db)).filter((city) => city.church_count > 0) : [];
-const withProof = churches.filter((church) => church.proof_url).length;
+const languages = db ? (await listLanguages(db)).filter((language) => language.language !== 'English') : [];
+const featured = churches.find((church) => church.proof_strength === 'strong' && church.earliest_sunday_time && church.proof_quote)
+  ?? churches.find((church) => church.proof_quote && church.earliest_sunday_time)
+  ?? churches[0];
+const board = churches.filter((church) => church.slug !== featured?.slug && church.earliest_sunday_time).slice(0, 4);
+const checked = featured ? formatChecked(featured.date_checked) : null;
+const quote = featured ? snippet(featured.proof_quote, 220) : '';
 const buckets = TIME_BUCKETS.map((bucket) => ({
   ...bucket,
   count: churches.filter((church) => timeBucket(church.earliest_sunday_minutes) === bucket.id).length,
@@ -24,100 +31,127 @@ const buckets = TIME_BUCKETS.map((bucket) => ({
 >
   {db ? (
     <>
-      <section class="bg-cream-50 border-b border-cream-300">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-14 md:py-20">
-          <p class="text-sm font-semibold uppercase tracking-wide text-primary-700">Charlotte pilot</p>
-          <h1 class="mt-3 font-serif text-4xl md:text-5xl text-gray-900 max-w-3xl">Find a church whose service time you can check.</h1>
-          <p class="mt-4 max-w-2xl text-lg text-gray-700">
-            This directory lists churches in Charlotte and nearby towns. Each one includes a short quote from the church’s own website, a link to that page, and the date we checked it.
-          </p>
-          <form action="/map" method="get" class="mt-8 card p-4 grid gap-3 md:grid-cols-[1fr_14rem_auto] md:items-end">
-            <label class="block">
-              <span class="text-sm font-medium text-gray-800">Name, city, or ZIP</span>
-              <input class="field mt-1" type="search" name="q" placeholder="Matthews, 28205, Baptist" />
-            </label>
-            <label class="block">
-              <span class="text-sm font-medium text-gray-800">Denomination family</span>
-              <select class="field mt-1" name="family">
-                <option value="">Any family</option>
-                {families.map((family) => <option value={family.slug}>{family.name}</option>)}
-              </select>
-            </label>
-            <button class="btn-primary" type="submit">Search the map</button>
-          </form>
-          <dl class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div class="card px-4 py-3"><dt class="text-sm text-gray-600">Open churches</dt><dd class="font-serif text-3xl">{churches.length}</dd></div>
-            <div class="card px-4 py-3"><dt class="text-sm text-gray-600">With a source link</dt><dd class="font-serif text-3xl">{withProof}</dd></div>
-            <div class="card px-4 py-3"><dt class="text-sm text-gray-600">Families with a church</dt><dd class="font-serif text-3xl">{families.length}</dd></div>
-            <div class="card px-4 py-3"><dt class="text-sm text-gray-600">Towns</dt><dd class="font-serif text-3xl">{cities.length}</dd></div>
-          </dl>
+      <section class="hero">
+        <div class="wrap hero-grid">
+          <div>
+            <h1>Find a Sunday service you can check.</h1>
+            <p class="lede">
+              {churches.length} churches in Charlotte and nearby towns. Each listing keeps a line from the church’s own site, a link to that page, and the date we checked it.
+            </p>
+            <form action="/map" method="get" class="search-board">
+              <label>
+                Name, city, or ZIP
+                <input class="field" type="search" name="q" />
+              </label>
+              <label>
+                Denomination family
+                <select class="field" name="family">
+                  <option value="">Any family</option>
+                  {families.map((family) => <option value={family.slug}>{family.name}</option>)}
+                </select>
+              </label>
+              <button class="btn-primary" type="submit">Search the map</button>
+            </form>
+          </div>
+          {featured && (
+            <article class="proof-panel">
+              <p class="proof-time">{featured.earliest_sunday_time || 'Time not listed'}</p>
+              <p class="time-caption">Earliest Sunday service</p>
+              <h2 class="proof-name"><a href={`/church/${featured.slug}`}>{featured.name}</a></h2>
+              <p class="meta">{[placeLine(featured), featured.family_name].filter(Boolean).join(' · ')}</p>
+              {quote && <blockquote class="proof-quote">{quote}</blockquote>}
+              <p class="meta" style="margin-top: 0.75rem">
+                {checked ? `Last checked ${checked}.` : 'Checked against the church website.'}
+              </p>
+              <p style="margin-top: 0.9rem"><a class="btn-secondary" href={`/church/${featured.slug}`}>Open the listing</a></p>
+            </article>
+          )}
         </div>
       </section>
 
-      <section class="max-w-6xl mx-auto px-4 sm:px-6 py-14">
-        <div class="flex items-end justify-between gap-4 mb-6">
-          <h2 class="font-serif text-3xl text-gray-900">A few churches</h2>
-          <a href="/map" class="text-sm font-semibold text-primary-700">See all on the map</a>
-        </div>
-        <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {churches.slice(0, 6).map((church) => (
-            <ChurchCard
-              slug={church.slug}
-              name={church.name}
-              familyName={church.family_name}
-              bodyName={church.body_name}
-              city={church.city}
-              state={church.state}
-              serviceTimes={church.service_times}
-              sunday={church.earliest_sunday_time}
-              languages={church.languages_text}
-              photoKey={church.photo_key}
-              historicallyBlack={Boolean(church.historically_black_tradition)}
-            />
-          ))}
-        </div>
-      </section>
+      {board.length > 0 && (
+        <section class="section wrap">
+          <div class="section-head">
+            <h2>More Sunday times</h2>
+            <a href="/map">See all on the map</a>
+          </div>
+          <div class="card-grid cols-3">
+            {board.map((church) => (
+              <ChurchCard
+                heading="h3"
+                slug={church.slug}
+                name={church.name}
+                familyName={church.family_name}
+                bodyName={church.body_name}
+                city={church.city}
+                state={church.state}
+                serviceTimes={church.service_times}
+                sunday={church.earliest_sunday_time}
+                languages={church.languages_text}
+                photoKey={church.photo_key}
+                historicallyBlack={Boolean(church.historically_black_tradition)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
-      <section class="bg-white border-y border-cream-300">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-14">
-          <h2 class="font-serif text-3xl text-gray-900">Browse by denomination family</h2>
-          <p class="mt-2 text-gray-600 max-w-2xl">Family is the broad tradition. The church page also names the specific body when we know it.</p>
-          <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {families.map((family) => (
-              <a href={`/denomination/${family.slug}`} class="card p-4 hover:border-primary-300">
-                <p class="font-serif text-xl text-gray-900">{family.name}</p>
-                <p class="text-sm text-gray-600 mt-1">{family.church_count} {family.church_count === 1 ? 'church' : 'churches'}</p>
+      {languages.length > 0 && (
+        <section class="section wrap">
+          <h2>Services in another language</h2>
+          <p class="quiet">A church can appear under more than one language. English is the default on most listings.</p>
+          <div class="chip-row">
+            {languages.map((language) => (
+              <a class="chip" href={`/map?language=${encodeURIComponent(language.language)}`}>
+                {language.language} ({language.church_count})
               </a>
             ))}
           </div>
-        </div>
+        </section>
+      )}
+
+      <section class="section wrap">
+        <h2>Browse by denomination family</h2>
+        <p class="quiet">Family is the broad tradition. The church page also names the specific body when we know it.</p>
+        <ul class="legend legend-split" style="margin-top: 1rem">
+          {families.map((family) => (
+            <li>
+              <a href={`/denomination/${family.slug}`}>
+                <span>{family.name}</span>
+                <span class="legend-meta">{family.church_count}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
       </section>
 
-      <section class="max-w-6xl mx-auto px-4 sm:px-6 py-14 grid gap-8 lg:grid-cols-2">
+      <section class="section wrap split">
         <div>
-          <h2 class="font-serif text-3xl text-gray-900">Towns in the pilot</h2>
-          <ul class="mt-4 grid grid-cols-2 gap-3">
+          <h2>Towns in the pilot</h2>
+          <ul class="legend" style="margin-top: 1rem">
             {cities.map((city) => (
               <li>
-                <a href={`/city/${city.slug}`} class="card block px-4 py-3 hover:border-primary-300">
-                  <span class="font-medium text-gray-900">{city.name}</span>
-                  <span class="block text-sm text-gray-600">{city.church_count} churches</span>
+                <a href={`/city/${city.slug}`}>
+                  <span>{city.name}</span>
+                  <span class="legend-meta">{city.church_count}</span>
                 </a>
               </li>
             ))}
           </ul>
         </div>
-        <div class="card p-6 bg-cream-50">
-          <h2 class="font-serif text-2xl text-gray-900">Sunday start times we could read</h2>
-          <ul class="mt-4 space-y-2 text-sm">
+        <div>
+          <h2>Sunday start times we could read</h2>
+          <ul class="legend" style="margin-top: 1rem">
             {buckets.map((bucket) => (
-              <li class="flex justify-between gap-4 bg-white rounded-lg px-3 py-2 border border-cream-300">
-                <a href={`/map?time=${bucket.id}`} class="hover:text-primary-700">{bucket.label}</a>
-                <span class="tabular-nums text-gray-600">{bucket.count}</span>
+              <li>
+                <a href={`/map?time=${bucket.id}`}>
+                  <span>{bucket.label}</span>
+                  <span class="legend-meta">{bucket.count}</span>
+                </a>
               </li>
             ))}
           </ul>
-          <p class="mt-4 text-sm text-gray-600">Times come from the church site. When a page did not state a clear Sunday start, the listing says so.</p>
+          <p class="quiet" style="margin-top: 0.9rem">Times come from the church site. When a page did not state a clear Sunday start, the listing says so.</p>
         </div>
       </section>
     </>

@@ -16,64 +16,64 @@ const error = Astro.url.searchParams.get('error');
   description="Submit a church to the Charlotte directory. It is reviewed before it appears."
 >
   {db ? (
-    <div class="max-w-2xl mx-auto px-4 sm:px-6 py-10">
-      <h1 class="font-serif text-4xl text-gray-900">Add a church</h1>
-      <p class="mt-3 text-gray-700">This creates a review row. The church appears on the site only after it is approved. Include a page on the church website if you have one, so the listing can be checked the same way as the others.</p>
-      {sent && <p class="mt-4 card p-4 bg-white">Thanks. The submission is in the queue.</p>}
-      {error === 'missing' && <p class="mt-4 card p-4">Add the church name, city, state, your email, and either a street address or a website.</p>}
-      {error === 'save_failed' && <p class="mt-4 card p-4">That did not save. Try again in a moment.</p>}
-      <form method="post" action="/api/submit" class="mt-6 card p-5 grid gap-4">
-        <label class="block text-sm">Church name
-          <input class="field mt-1" name="name" required maxlength="200" />
+    <div class="page wrap" style="max-width: 42rem">
+      <h1>Add a church</h1>
+      <p class="lede">This creates a review row. The church appears on the site only after it is approved. Include a page on the church website if you have one, so the listing can be checked the same way as the others.</p>
+      {sent && <p class="notice notice-ok" role="status">Thanks. The submission is in the queue.</p>}
+      {error === 'missing' && <p class="notice notice-error" role="alert">Add the church name, city, state, your email, and either a street address or a website.</p>}
+      {error === 'save_failed' && <p class="notice notice-error" role="alert">That did not save. Try again in a moment.</p>}
+      <form method="post" action="/api/submit" class="form-card">
+        <label>Church name
+          <input class="field" name="name" required maxlength="200" />
         </label>
-        <label class="block text-sm">Campus name, if it has one
-          <input class="field mt-1" name="campus_name" maxlength="200" />
+        <label>Campus name, if it has one
+          <input class="field" name="campus_name" maxlength="200" />
         </label>
-        <label class="block text-sm">Street address
-          <input class="field mt-1" name="address" maxlength="300" />
+        <label>Street address
+          <input class="field" name="address" maxlength="300" />
         </label>
-        <div class="grid gap-4 sm:grid-cols-3">
-          <label class="block text-sm">City
-            <input class="field mt-1" name="city" required maxlength="80" />
+        <div class="filter-grid" style="margin-top: 0; padding: 0; border: 0; background: transparent">
+          <label>City
+            <input class="field" name="city" required maxlength="80" />
           </label>
-          <label class="block text-sm">State
-            <input class="field mt-1" name="state" required maxlength="2" value="NC" />
+          <label>State
+            <input class="field" name="state" required maxlength="2" value="NC" />
           </label>
-          <label class="block text-sm">ZIP
-            <input class="field mt-1" name="zip" maxlength="10" />
+          <label>ZIP
+            <input class="field" name="zip" maxlength="10" />
           </label>
         </div>
-        <label class="block text-sm">Phone
-          <input class="field mt-1" name="phone" maxlength="40" />
+        <label>Phone
+          <input class="field" name="phone" maxlength="40" />
         </label>
-        <label class="block text-sm">Website
-          <input class="field mt-1" name="website" type="url" maxlength="300" placeholder="https://" />
+        <label>Website
+          <input class="field" name="website" type="url" maxlength="300" placeholder="https://" />
         </label>
-        <label class="block text-sm">Service times, in the church’s words
-          <textarea class="field mt-1" name="service_times" rows="3" maxlength="2000"></textarea>
+        <label>Service times, in the church’s words
+          <textarea class="field" name="service_times" rows="3" maxlength="2000"></textarea>
         </label>
-        <label class="block text-sm">Languages
-          <input class="field mt-1" name="languages_text" maxlength="200" placeholder="English; Spanish" />
+        <label>Languages
+          <input class="field" name="languages_text" maxlength="200" placeholder="English; Spanish" />
         </label>
-        <label class="block text-sm">Denomination family
-          <select class="field mt-1" name="denomination_family">
+        <label>Denomination family
+          <select class="field" name="denomination_family">
             <option value="">Not sure</option>
             {families.map((family) => <option value={family.name}>{family.name}</option>)}
           </select>
         </label>
-        <label class="block text-sm">Specific body, if you know it
-          <input class="field mt-1" name="denomination_body" maxlength="200" />
+        <label>Specific body, if you know it
+          <input class="field" name="denomination_body" maxlength="200" />
         </label>
-        <label class="block text-sm">Anything else we should know
-          <textarea class="field mt-1" name="note" rows="3" maxlength="1000"></textarea>
+        <label>Anything else we should know
+          <textarea class="field" name="note" rows="3" maxlength="1000"></textarea>
         </label>
-        <label class="block text-sm">Your name
-          <input class="field mt-1" name="submitter_name" maxlength="120" />
+        <label>Your name
+          <input class="field" name="submitter_name" maxlength="120" />
         </label>
-        <label class="block text-sm">Your email
-          <input class="field mt-1" name="submitter_email" type="email" required maxlength="200" />
+        <label>Your email
+          <input class="field" name="submitter_email" type="email" required maxlength="200" />
         </label>
-        <label class="absolute left-[-9999px]" aria-hidden="true">Leave this blank
+        <label class="sr-only" aria-hidden="true">Leave this blank
           <input name="company_fax" tabindex="-1" autocomplete="off" />
         </label>
         <button class="btn-primary" type="submit">Submit for review</button>

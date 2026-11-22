@@ -27,6 +27,18 @@ const websiteLd = {
   url: canonicalUrl('/'),
   description: 'A directory of churches in the Charlotte area, checked against their own websites.',
 };
+const nav = [
+  { href: '/charlotte', label: 'Charlotte' },
+  { href: '/map', label: 'Map' },
+  { href: '/denomination', label: 'Denominations' },
+  { href: '/analytics', label: 'The numbers' },
+  { href: '/about', label: 'About' },
+];
+
+function current(href: string) {
+  if (href === '/') return path === '/';
+  return path === href || path.startsWith(`${href}/`);
+}
 ---
 
 <!DOCTYPE html>
@@ -41,60 +53,59 @@ const websiteLd = {
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,560;8..60,680&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Familjen+Grotesk:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet" />
     <script type="application/ld+json" set:html={jsonLdScript(jsonLd ?? websiteLd)} />
   </head>
   <body class="min-h-screen flex flex-col">
     <a class="skip-link" href="#content">Skip to content</a>
-    <header class="bg-cream-50 border-b border-cream-300 sticky top-0 z-40">
-      <nav class="max-w-6xl mx-auto px-4 sm:px-6">
-        <div class="flex items-center justify-between h-16 gap-4">
-          <a href="/" class="font-serif text-xl text-gray-900 font-semibold tracking-tight">Find a Church</a>
-          <div class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-700">
-            <a href="/charlotte" class="hover:text-primary-700">Charlotte</a>
-            <a href="/map" class="hover:text-primary-700">Map</a>
-            <a href="/denomination" class="hover:text-primary-700">Denominations</a>
-            <a href="/analytics" class="hover:text-primary-700">The numbers</a>
-            <a href="/about" class="hover:text-primary-700">About</a>
+    <header class="site-header">
+      <nav class="wrap" aria-label="Primary">
+        <div class="header-bar">
+          <a href="/" class="wordmark">Find a Church</a>
+          <div class="nav-links">
+            {nav.map((item) => (
+              <a href={item.href} aria-current={current(item.href) ? 'page' : undefined}>{item.label}</a>
+            ))}
           </div>
-          <a href="/submit" class="btn-primary text-sm px-4 py-2">Add a church</a>
+          <a href="/submit" class="btn-primary header-action">Add a church</a>
         </div>
-        <div class="md:hidden flex flex-wrap gap-x-4 gap-y-2 pb-3 text-sm font-medium text-gray-700">
-          <a href="/charlotte">Charlotte</a>
-          <a href="/map">Map</a>
-          <a href="/denomination">Denominations</a>
-          <a href="/analytics">The numbers</a>
-          <a href="/about">About</a>
-        </div>
+        <details class="nav-mobile">
+          <summary>Browse</summary>
+          <div class="nav-mobile-panel">
+            {nav.map((item) => (
+              <a href={item.href} aria-current={current(item.href) ? 'page' : undefined}>{item.label}</a>
+            ))}
+          </div>
+        </details>
       </nav>
     </header>
     <main id="content" class="flex-1">
       <slot />
     </main>
-    <footer class="border-t border-cream-300 bg-cream-50 mt-16">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid gap-8 sm:grid-cols-3 text-sm">
+    <footer class="site-footer">
+      <div class="wrap footer-grid">
         <div>
-          <p class="font-serif text-lg text-gray-900">Find a Church</p>
-          <p class="mt-2 text-gray-600">Charlotte is the pilot. Each listing keeps a quote from the church’s own site and the date we checked it.</p>
+          <p class="wordmark" style="color: var(--ink)">Find a Church</p>
+          <p class="mt-2">Charlotte is the pilot. Each listing keeps a quote from the church’s own site and the date we checked it.</p>
         </div>
         <div>
-          <p class="font-medium text-gray-900">Browse</p>
-          <ul class="mt-2 space-y-1 text-gray-600">
-            <li><a href="/map" class="hover:text-primary-700">Map and filters</a></li>
-            <li><a href="/charlotte" class="hover:text-primary-700">Charlotte metro</a></li>
-            <li><a href="/denomination" class="hover:text-primary-700">Denomination families</a></li>
-            <li><a href="/analytics" class="hover:text-primary-700">What the area looks like</a></li>
+          <h2>Browse</h2>
+          <ul>
+            <li><a href="/map">Map and filters</a></li>
+            <li><a href="/charlotte">Charlotte metro</a></li>
+            <li><a href="/denomination">Denomination families</a></li>
+            <li><a href="/analytics">What the area looks like</a></li>
           </ul>
         </div>
         <div>
-          <p class="font-medium text-gray-900">Corrections</p>
-          <ul class="mt-2 space-y-1 text-gray-600">
-            <li><a href="/submit" class="hover:text-primary-700">Submit a church</a></li>
-            <li><a href="/about" class="hover:text-primary-700">How a listing gets checked</a></li>
+          <h2>Corrections</h2>
+          <ul>
+            <li><a href="/submit">Submit a church</a></li>
+            <li><a href="/about">How a listing gets checked</a></li>
           </ul>
         </div>
       </div>
-      <p class="text-center text-xs text-gray-500 pb-6">© {new Date().getFullYear()} Find a Church. Listings stay in the directory when a church closes. They are not deleted.</p>
+      <p class="wrap legal">© {new Date().getFullYear()} Find a Church. Listings stay in the directory when a church closes. They are not deleted.</p>
     </footer>
   </body>
 </html>

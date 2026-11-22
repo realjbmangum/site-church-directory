@@ -13,23 +13,41 @@ interface Props {
   languages?: string | null;
   photoKey?: string | null;
   historicallyBlack?: boolean;
+  heading?: 'h2' | 'h3';
 }
 
-const { slug, name, familyName, bodyName, city, state, serviceTimes, sunday, languages, photoKey, historicallyBlack } = Astro.props;
+const {
+  slug,
+  name,
+  familyName,
+  bodyName,
+  city,
+  state,
+  serviceTimes,
+  sunday,
+  languages,
+  photoKey,
+  historicallyBlack,
+  heading = 'h2',
+} = Astro.props;
 const photo = mediaUrl(photoKey);
 const line = snippet(serviceTimes, 120);
+const Heading = heading;
 ---
 
-<a href={`/church/${slug}`} class="card group block p-5 h-full hover:border-primary-300">
-  {photo && (
-    <img src={photo} alt="" class="w-full h-40 object-cover rounded-xl mb-4" />
-  )}
-  <p class="text-sm text-primary-800">{familyName || 'Denomination not stated'}</p>
-  <h2 class="font-serif text-xl text-gray-900 mt-1 group-hover:text-primary-800">{name}</h2>
-  <p class="text-sm text-gray-600 mt-1">{placeLine({ city, state })}</p>
-  {bodyName && <p class="text-sm text-gray-600 mt-2">{bodyName}</p>}
-  {historicallyBlack && <p class="mt-2"><span class="badge">Historically Black tradition</span></p>}
-  {sunday && <p class="mt-3 text-sm bg-cream-100 rounded-lg px-3 py-2">Earliest Sunday service: {sunday}</p>}
-  {!sunday && line && <p class="mt-3 text-sm text-gray-700">{line}</p>}
-  {languages && languages !== 'English' && <p class="mt-3 text-sm text-gray-600">Languages: {languages}</p>}
+<a href={`/church/${slug}`} class="stop-card">
+  {photo && <img src={photo} alt="" class="stop-photo" />}
+  <p class="stop-time">{sunday || 'Time not listed'}</p>
+  <div>
+    <Heading class="stop-name">{name}</Heading>
+    <p class="stop-place">{placeLine({ city, state })}</p>
+    <p class="stop-meta">{[familyName || 'Denomination not stated', bodyName].filter(Boolean).join(' · ')}</p>
+    {!sunday && line && <p class="stop-meta">{line}</p>}
+    {(historicallyBlack || (languages && languages !== 'English')) && (
+      <p class="chip-row" style="margin-top: 0.55rem">
+        {historicallyBlack && <span class="badge">Historically Black tradition</span>}
+        {languages && languages !== 'English' && <span class="badge">{languages}</span>}
+      </p>
+    )}
+  </div>
 </a>

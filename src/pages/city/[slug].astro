@@ -18,21 +18,25 @@ const churches = db && city ? await churchesInCity(db, city.id) : [];
 >
   {db ? (
     city ? (
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-        <p class="text-sm text-gray-600"><a href="/charlotte" class="hover:text-primary-700">Charlotte metro</a></p>
-        <h1 class="mt-2 font-serif text-4xl text-gray-900">Churches in {city.name}, {city.state}</h1>
-        <p class="mt-3 text-gray-700">{churches.length} open {churches.length === 1 ? 'listing' : 'listings'}.</p>
-        <p class="mt-4"><a class="btn-secondary" href={`/map?place=${encodeURIComponent(city.name)}`}>See them on the map</a></p>
-        <div class="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {churches.map((church) => (
-            <ChurchCard slug={church.slug} name={church.name} familyName={church.family_name} bodyName={church.body_name} city={church.city} state={church.state} sunday={church.earliest_sunday_time} languages={church.languages_text} serviceTimes={church.service_times} photoKey={church.photo_key} historicallyBlack={Boolean(church.historically_black_tradition)} />
-          ))}
-        </div>
+      <div class="page wrap">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/charlotte">Charlotte metro</a></nav>
+        <h1 style="margin-top: 0.6rem">Churches in {city.name}, {city.state}</h1>
+        <p class="lede">{churches.length} open {churches.length === 1 ? 'listing' : 'listings'}.</p>
+        <p style="margin-top: 1rem"><a class="btn-secondary" href={`/map?place=${encodeURIComponent(city.name)}`}>See them on the map</a></p>
+        {churches.length === 0 ? (
+          <p class="notice">No open churches are listed in this town yet.</p>
+        ) : (
+          <div class="card-grid cols-3">
+            {churches.map((church) => (
+              <ChurchCard slug={church.slug} name={church.name} familyName={church.family_name} bodyName={church.body_name} city={church.city} state={church.state} sunday={church.earliest_sunday_time} languages={church.languages_text} serviceTimes={church.service_times} photoKey={church.photo_key} historicallyBlack={Boolean(church.historically_black_tradition)} />
+            ))}
+          </div>
+        )}
       </div>
     ) : (
-      <div class="max-w-xl mx-auto px-4 py-20">
-        <h1 class="font-serif text-3xl">That city is not in the pilot.</h1>
-        <p class="mt-3"><a class="text-primary-700" href="/charlotte">Back to Charlotte</a></p>
+      <div class="page wrap">
+        <h1>That city is not in the pilot.</h1>
+        <p class="lede"><a class="btn-secondary" href="/charlotte">Back to Charlotte</a></p>
       </div>
     )
   ) : <DatabaseMissing />}
