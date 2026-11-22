@@ -1,0 +1,46 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import ChurchCard from '../../../components/ChurchCard.astro';
+import DatabaseMissing from '../../../components/DatabaseMissing.astro';
+import { getDb } from '../../../lib/db';
+import { churchesInBody, getBody } from '../../../lib/queries';
+
+const db = getDb(Astro.locals);
+const body = db ? await getBody(db, Astro.params.family ?? '', Astro.params.body ?? '') : null;
+if (db && !body) Astro.response.status = 404;
+const churches = db && body ? await churchesInBody(db, body.id) : [];
+const path = `/denomination/${body?.family_slug ?? ''}/${body?.slug ?? ''}`;
+---
+
+<Layout
+  title={body ? `${body.name}` : 'Denomination body'}
+  path={path}
+  description={body ? `${body.name} churches in the ${body.family_name} family around Charlotte.` : 'Denomination body'}
+>
+  {db ? (
+    body ? (
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+        <p class="text-sm text-gray-600">
+          <a href="/denomination" class="hover:text-primary-700">Denominations</a>
+          <span class="px-1">/</span>
+          <a href={`/denomination/${body.family_slug}`} class="hover:text-primary-700">{body.family_name}</a>
+        </p>
+        <h1 class="mt-2 font-serif text-4xl text-gray-900">{body.name}</h1>
+        {body.historically_black_tradition === 1 && (
+          <p class="mt-3"><span class="badge">Historically Black tradition</span></p>
+        )}
+        <p class="mt-3 text-gray-700">{churches.length} {churches.length === 1 ? 'church' : 'churches'} in the Charlotte pilot.</p>
+        <div class="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {churches.map((church) => (
+            <ChurchCard slug={church.slug} name={church.name} familyName={church.family_name} bodyName={church.body_name} city={church.city} state={church.state} sunday={church.earliest_sunday_time} languages={church.languages_text} serviceTimes={church.service_times} photoKey={church.photo_key} historicallyBlack={Boolean(church.historically_black_tradition)} />
+          ))}
+        </div>
+      </div>
+    ) : (
+      <div class="max-w-xl mx-auto px-4 py-20">
+        <h1 class="font-serif text-3xl">That denomination body is not listed.</h1>
+        <p class="mt-3"><a class="text-primary-700" href="/denomination">Back to families</a></p>
+      </div>
+    )
+  ) : <DatabaseMissing />}
+</Layout>

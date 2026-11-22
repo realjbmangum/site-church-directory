@@ -1,0 +1,77 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import DatabaseMissing from '../../../components/DatabaseMissing.astro';
+import { getDb } from '../../../lib/db';
+import { getChurch } from '../../../lib/queries';
+
+const db = getDb(Astro.locals);
+const church = db ? await getChurch(db, Astro.params.slug ?? '') : null;
+if (db && !church) Astro.response.status = 404;
+const sent = Astro.url.searchParams.get('sent') === '1';
+const error = Astro.url.searchParams.get('error');
+---
+
+<Layout
+  title={church ? `Suggest a correction for ${church.name}` : 'Suggest a correction'}
+  path={church ? `/church/${church.slug}/suggest` : '/map'}
+  noindex={true}
+  description="Suggest a correction. It is reviewed before the listing changes."
+>
+  {db ? (
+    church ? (
+      <div class="max-w-2xl mx-auto px-4 sm:px-6 py-10">
+        <p class="text-sm"><a class="text-primary-700" href={`/church/${church.slug}`}>{church.name}</a></p>
+        <h1 class="mt-2 font-serif text-4xl text-gray-900">Suggest a correction</h1>
+        <p class="mt-3 text-gray-700">Write what should change. The public listing stays as it is until the correction is approved. Leave a field blank if it is already right.</p>
+        {sent && <p class="mt-4 card p-4">Thanks. The suggestion is in the queue.</p>}
+        {error === 'missing' && <p class="mt-4 card p-4">Add a short note about what should change.</p>}
+        <form method="post" action="/api/suggest" class="mt-6 card p-5 grid gap-4">
+          <input type="hidden" name="church" value={church.slug} />
+          <label class="block text-sm">What should change
+            <textarea class="field mt-1" name="message" required rows="4" maxlength="2000"></textarea>
+          </label>
+          <label class="block text-sm">Service times
+            <textarea class="field mt-1" name="service_times" rows="3" maxlength="2000" placeholder={church.service_times || ''}></textarea>
+          </label>
+          <label class="block text-sm">Phone
+            <input class="field mt-1" name="phone" maxlength="40" placeholder={church.phone || ''} />
+          </label>
+          <label class="block text-sm">Website
+            <input class="field mt-1" name="website" maxlength="300" placeholder={church.website || ''} />
+          </label>
+          <label class="block text-sm">Street address
+            <input class="field mt-1" name="address" maxlength="300" placeholder={church.address || ''} />
+          </label>
+          <div class="grid gap-4 sm:grid-cols-3">
+            <label class="block text-sm">City
+              <input class="field mt-1" name="city" maxlength="80" placeholder={church.city || ''} />
+            </label>
+            <label class="block text-sm">State
+              <input class="field mt-1" name="state" maxlength="2" placeholder={church.state || ''} />
+            </label>
+            <label class="block text-sm">ZIP
+              <input class="field mt-1" name="zip" maxlength="10" placeholder={church.zip || ''} />
+            </label>
+          </div>
+          <label class="block text-sm">Languages
+            <input class="field mt-1" name="languages_text" maxlength="200" placeholder={church.languages_text || ''} />
+          </label>
+          <label class="block text-sm">Your name
+            <input class="field mt-1" name="contact_name" maxlength="120" />
+          </label>
+          <label class="block text-sm">Your email
+            <input class="field mt-1" name="contact_email" type="email" maxlength="200" />
+          </label>
+          <label class="absolute left-[-9999px]" aria-hidden="true">Leave this blank
+            <input name="company_fax" tabindex="-1" autocomplete="off" />
+          </label>
+          <button class="btn-primary" type="submit">Send the suggestion</button>
+        </form>
+      </div>
+    ) : (
+      <div class="max-w-xl mx-auto px-4 py-20">
+        <h1 class="font-serif text-3xl">That church is not in the directory.</h1>
+      </div>
+    )
+  ) : <DatabaseMissing />}
+</Layout>

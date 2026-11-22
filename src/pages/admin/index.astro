@@ -1,0 +1,27 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import DatabaseMissing from '../../components/DatabaseMissing.astro';
+import { getDb } from '../../lib/db';
+import { errorMessage, flashMessage } from '../../lib/flash';
+import { deskCounts } from '../../lib/queries';
+
+const db = getDb(Astro.locals);
+const counts = db ? await deskCounts(db) : null;
+---
+
+<AdminLayout title="Overview" flash={flashMessage(Astro.url.searchParams.get('done'))} error={errorMessage(Astro.url.searchParams.get('error'))}>
+  {db && counts ? (
+    <>
+      <h1 class="font-serif text-3xl text-gray-900">Waiting on a decision</h1>
+      <p class="mt-2 max-w-2xl text-gray-700">Approve or reject a row to change a public listing. Until then, the site keeps the last approved version. Closed churches stay in the database.</p>
+      <div class="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <a href="/admin/submissions" class="card p-4"><p class="text-sm text-gray-600">Submissions</p><p class="font-serif text-3xl">{counts.submissions}</p></a>
+        <a href="/admin/edits" class="card p-4"><p class="text-sm text-gray-600">Suggested edits</p><p class="font-serif text-3xl">{counts.edits}</p></a>
+        <a href="/admin/checks" class="card p-4"><p class="text-sm text-gray-600">Listing checks</p><p class="font-serif text-3xl">{counts.checks}</p></a>
+        <a href="/admin/inbox" class="card p-4"><p class="text-sm text-gray-600">Inbox messages</p><p class="font-serif text-3xl">{counts.inbox}</p></a>
+        <div class="card p-4"><p class="text-sm text-gray-600">Open churches</p><p class="font-serif text-3xl">{counts.churches}</p></div>
+        <div class="card p-4"><p class="text-sm text-gray-600">Marked closed</p><p class="font-serif text-3xl">{counts.closed}</p></div>
+      </div>
+    </>
+  ) : <DatabaseMissing />}
+</AdminLayout>

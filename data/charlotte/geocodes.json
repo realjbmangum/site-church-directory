@@ -1,0 +1,924 @@
+{
+  "generated_at": "2026-11-22T20:04:40.475Z",
+  "source": "US Census Bureau Geocoder, Public_AR_Current batch locations",
+  "source_url": "https://geocoding.geo.census.gov/geocoder/",
+  "matched": 152,
+  "missed": 5,
+  "skipped": [
+    "the-church-of-jesus-christ-apostolic"
+  ],
+  "results": {
+    "statesville-avenue-presbyterian-church-charlotte": {
+      "lat": 35.282407971267,
+      "lng": -80.831511963761,
+      "matched_address": "3435 NEVIN RD, CHARLOTTE, NC, 28269",
+      "match": "Match"
+    },
+    "cornerstone-baptist-church-charlotte": {
+      "lat": 35.211399748357,
+      "lng": -80.693768545654,
+      "matched_address": "8947 ALBEMARLE RD, CHARLOTTE, NC, 28227",
+      "match": "Match"
+    },
+    "selwyn-avenue-presbyterian-church-charlotte": {
+      "lat": 35.17320929992,
+      "lng": -80.840357250336,
+      "matched_address": "2929 SELWYN AVE, CHARLOTTE, NC, 28209",
+      "match": "Match"
+    },
+    "pineville-united-methodist-church-pineville": {
+      "lat": 35.085063267452,
+      "lng": -80.886804775004,
+      "matched_address": "110 S POLK ST, PINEVILLE, NC, 28134",
+      "match": "Match"
+    },
+    "grace-crossing-charlotte": {
+      "lat": 35.283509834977,
+      "lng": -80.6778054355,
+      "matched_address": "5600 ROCKY RIVER RD, CHARLOTTE, NC, 28215",
+      "match": "Match"
+    },
+    "new-life-fellowship-church-charlotte": {
+      "lat": 35.257707444553,
+      "lng": -80.838723309218,
+      "matched_address": "1337 SAMUEL ST, CHARLOTTE, NC, 28206",
+      "match": "Match"
+    },
+    "carmel-presbyterian-church-charlotte": {
+      "lat": 35.139007738373,
+      "lng": -80.802947106224,
+      "matched_address": "2048 CARMEL RD, CHARLOTTE, NC, 28226",
+      "match": "Match"
+    },
+    "st-marks-united-methodist-church-charlotte": {
+      "lat": 35.19942725014,
+      "lng": -80.887265162839,
+      "matched_address": "917 CLANTON RD, CHARLOTTE, NC, 28217",
+      "match": "Match"
+    },
+    "assurance-united-methodist-church-huntersville": {
+      "lat": 35.358763411869,
+      "lng": -80.867440277512,
+      "matched_address": "9700 MOUNT HOLLY-HUNTERSVILLE RD, HUNTERSVILLE, NC, 28078",
+      "match": "Match"
+    },
+    "mulberry-presbyterian-church-charlotte": {
+      "lat": 35.244840752168,
+      "lng": -80.918940709255,
+      "matched_address": "5600 TUCKASEEGEE RD, CHARLOTTE, NC, 28208",
+      "match": "Match"
+    },
+    "mercy-church-charlotte": {
+      "lat": 35.109987408055,
+      "lng": -80.778440328456,
+      "matched_address": "7200 PROVIDENCE RD, CHARLOTTE, NC, 28226",
+      "match": "Match"
+    },
+    "idlewild-baptist-church-matthews": {
+      "lat": 35.139292000374,
+      "lng": -80.689145736428,
+      "matched_address": "12701 IDLEWILD RD, MATTHEWS, NC, 28105",
+      "match": "Match"
+    },
+    "the-place-united-methodist-church-charlotte": {
+      "lat": 35.281977535511,
+      "lng": -80.918482597952,
+      "matched_address": "6729 OLD MOUNT HOLLY RD, CHARLOTTE, NC, 28214",
+      "match": "Match"
+    },
+    "resurrection-presbyterian-church-matthews": {
+      "lat": 35.139378678357,
+      "lng": -80.703514573229,
+      "matched_address": "2701 RICE RD, MATTHEWS, NC, 28105",
+      "match": "Match"
+    },
+    "greater-vision-united-methodist-church-huntersville": {
+      "lat": 35.375634667601,
+      "lng": -80.801966351401,
+      "matched_address": "11901 EASTFIELD RD, HUNTERSVILLE, NC, 28078",
+      "match": "Match"
+    },
+    "matthews-united-methodist-church-matthews": {
+      "lat": 35.109539255816,
+      "lng": -80.728478266357,
+      "matched_address": "801 S TRADE ST, MATTHEWS, NC, 28105",
+      "match": "Match"
+    },
+    "chosen-city-church-charlotte": {
+      "lat": 35.116464042072,
+      "lng": -80.977031958846,
+      "matched_address": "13925 ERWIN RD, CHARLOTTE, NC, 28273",
+      "match": "Match"
+    },
+    "st-vincent-de-paul-catholic-church-charlotte": {
+      "lat": 35.142105708418,
+      "lng": -80.852173061546,
+      "matched_address": "6828 OLD REID RD, CHARLOTTE, NC, 28210",
+      "match": "Match"
+    },
+    "south-tryon-community-mission-united-methodist-church-charlotte": {
+      "lat": 35.206440079472,
+      "lng": -80.868857404385,
+      "matched_address": "2516 S TRYON ST, CHARLOTTE, NC, 28203",
+      "match": "Match"
+    },
+    "st-ann-catholic-church-charlotte": {
+      "lat": 35.181598429403,
+      "lng": -80.851638676723,
+      "matched_address": "3635 PARK RD, CHARLOTTE, NC, 28209",
+      "match": "Match"
+    },
+    "avondale-presbyterian-church-charlotte": {
+      "lat": 35.193241281105,
+      "lng": -80.852242381358,
+      "matched_address": "2821 PARK RD, CHARLOTTE, NC, 28209",
+      "match": "Match"
+    },
+    "caldwell-presbyterian-church-charlotte": {
+      "lat": 35.214841931724,
+      "lng": -80.825124248698,
+      "matched_address": "1609 E 5TH ST, CHARLOTTE, NC, 28204",
+      "match": "Match"
+    },
+    "greater-salem-church-charlotte": {
+      "lat": 35.27534020569,
+      "lng": -80.892939947488,
+      "matched_address": "5318 SALEM CHURCH RD, CHARLOTTE, NC, 28216",
+      "match": "Match"
+    },
+    "steele-creek-presbyterian-church-charlotte": {
+      "lat": 35.093273165578,
+      "lng": -81.020000904377,
+      "matched_address": "15000 YORK RD, CHARLOTTE, NC, 28278",
+      "match": "Match"
+    },
+    "living-hope-at-ballantyne-charlotte": {
+      "lat": 35.050808787133,
+      "lng": -80.814763918084,
+      "matched_address": "11724 ELM LN, CHARLOTTE, NC, 28277",
+      "match": "Match"
+    },
+    "community-in-christ-lutheran-church-cornelius": {
+      "lat": 35.445358794536,
+      "lng": -80.895995115334,
+      "matched_address": "7621 NORMAN ISLAND DR, CORNELIUS, NC, 28031",
+      "match": "Match"
+    },
+    "ramah-presbyterian-church-huntersville": {
+      "lat": 35.439455661933,
+      "lng": -80.802055647317,
+      "matched_address": "14401 RAMAH CHURCH RD, HUNTERSVILLE, NC, 28078",
+      "match": "Match"
+    },
+    "true-light-christian-church-charlotte": {
+      "lat": 35.112289201305,
+      "lng": -80.918201663575,
+      "matched_address": "226 WESTINGHOUSE BLVD, CHARLOTTE, NC, 28273",
+      "match": "Match"
+    },
+    "clear-creek-baptist-church-charlotte": {
+      "lat": 35.197225425748,
+      "lng": -80.579325072672,
+      "matched_address": "9015 FERGUSON RD, CHARLOTTE, NC, 28227",
+      "match": "Match"
+    },
+    "st-francis-united-methodist-church-charlotte": {
+      "lat": 35.068622273453,
+      "lng": -80.756631899867,
+      "matched_address": "4200 MCKEE RD, CHARLOTTE, NC, 28270",
+      "match": "Match"
+    },
+    "amity-presbyterian-church-charlotte": {
+      "lat": 35.197030037477,
+      "lng": -80.762719001042,
+      "matched_address": "2831 N SHARON AMITY RD, CHARLOTTE, NC, 28205",
+      "match": "Match"
+    },
+    "ben-salem-presbyterian-church-charlotte": {
+      "lat": 35.176084283958,
+      "lng": -80.756498443256,
+      "matched_address": "6801 MONROE RD, CHARLOTTE, NC, 28212",
+      "match": "Match"
+    },
+    "commonwealth-united-methodist-church-charlotte": {
+      "lat": 35.215229590187,
+      "lng": -80.805441503194,
+      "matched_address": "2434 COMMONWEALTH AVE, CHARLOTTE, NC, 28205",
+      "match": "Match"
+    },
+    "good-shepherd-presbyterian-church-charlotte": {
+      "lat": 35.11104476044,
+      "lng": -80.791990305232,
+      "matched_address": "3307 REA RD, CHARLOTTE, NC, 28226",
+      "match": "Match"
+    },
+    "st-paul-baptist-church-charlotte": {
+      "lat": 35.230146860144,
+      "lng": -80.81764879588,
+      "matched_address": "1401 ALLEN ST, CHARLOTTE, NC, 28205",
+      "match": "Match"
+    },
+    "elevation-matthews-matthews": {
+      "lat": 35.116751500214,
+      "lng": -80.695734901679,
+      "matched_address": "11416 E INDEPENDENCE BLVD, MATTHEWS, NC, 28105",
+      "match": "Match"
+    },
+    "little-church-on-the-lane-charlotte": {
+      "lat": 35.2037948084,
+      "lng": -80.825077937327,
+      "matched_address": "522 MORAVIAN LN, CHARLOTTE, NC, 28207",
+      "match": "Match"
+    },
+    "independence-hill-baptist-church-huntersville": {
+      "lat": 35.360329795337,
+      "lng": -80.820997547051,
+      "matched_address": "10220 INDEPENDENCE HILL RD, HUNTERSVILLE, NC, 28078",
+      "match": "Match"
+    },
+    "grace-lutheran-church-charlotte": {
+      "lat": 35.113187613517,
+      "lng": -80.778666781599,
+      "matched_address": "7000 PROVIDENCE RD, CHARLOTTE, NC, 28226",
+      "match": "Match"
+    },
+    "st-mark-catholic-church-huntersville": {
+      "lat": 35.420624444125,
+      "lng": -80.866599156932,
+      "matched_address": "14740 STUMPTOWN RD, HUNTERSVILLE, NC, 28078",
+      "match": "Match"
+    },
+    "sardis-presbyterian-church-charlotte": {
+      "lat": 35.158599685115,
+      "lng": -80.77665122092,
+      "matched_address": "6100 SARDIS RD, CHARLOTTE, NC, 28270",
+      "match": "Match"
+    },
+    "mt-harmony-baptist-church-matthews": {
+      "lat": 35.116015377891,
+      "lng": -80.675304788175,
+      "matched_address": "2817 MOUNT HARMONY CHURCH RD, MATTHEWS, NC, 28105",
+      "match": "Match"
+    },
+    "trinity-fellowship-church-matthews": {
+      "lat": 35.1377215971,
+      "lng": -80.68067898263,
+      "matched_address": "13232 IDLEWILD RD, MATTHEWS, NC, 28105",
+      "match": "Match"
+    },
+    "our-lady-of-guadalupe-catholic-church-charlotte": {
+      "lat": 35.244587098819,
+      "lng": -80.92897019904,
+      "matched_address": "6212 TUCKASEEGEE RD, CHARLOTTE, NC, 28214",
+      "match": "Match"
+    },
+    "hope-community-church-of-metrolina-charlotte": {
+      "lat": 35.250274944773,
+      "lng": -80.98425656503,
+      "matched_address": "3205 SAM WILSON RD, CHARLOTTE, NC, 28214",
+      "match": "Match"
+    },
+    "nations-ford-community-church-charlotte": {
+      "lat": 35.167547813372,
+      "lng": -80.892524272054,
+      "matched_address": "5901 NATIONS FORD RD, CHARLOTTE, NC, 28217",
+      "match": "Match"
+    },
+    "dunamis-church-mint-hill": {
+      "lat": 35.186825685418,
+      "lng": -80.688680211711,
+      "matched_address": "9229 LAWYERS RD, MINT HILL, NC, 28227",
+      "match": "Match"
+    },
+    "hopewell-baptist-church-davidson": {
+      "lat": 35.465772876555,
+      "lng": -80.813461192301,
+      "matched_address": "18841 DAVIDSON CONCORD RD, DAVIDSON, NC, 28036",
+      "match": "Match"
+    },
+    "st-john-neumann-catholic-church-charlotte": {
+      "lat": 35.180429326999,
+      "lng": -80.725055181766,
+      "matched_address": "8451 IDLEWILD RD, CHARLOTTE, NC, 28227",
+      "match": "Match"
+    },
+    "nativity-of-the-holy-theotokos-orthodox-church-charlotte": {
+      "lat": 35.291862177005,
+      "lng": -80.790525894677,
+      "matched_address": "1700 MINERAL SPRINGS RD, CHARLOTTE, NC, 28262",
+      "match": "Match"
+    },
+    "blair-road-united-methodist-church-mint-hill": {
+      "lat": 35.193876638302,
+      "lng": -80.638472455799,
+      "matched_address": "9135 BLAIR RD, MINT HILL, NC, 28227",
+      "match": "Match"
+    },
+    "st-thomas-aquinas-catholic-church-charlotte": {
+      "lat": 35.300601145764,
+      "lng": -80.727888880425,
+      "matched_address": "1400 SUTHER RD, CHARLOTTE, NC, 28213",
+      "match": "Match"
+    },
+    "northdavidson-united-methodist-congregation-charlotte": {
+      "lat": 35.243686395601,
+      "lng": -80.799732742696,
+      "matched_address": "1025 E 36TH ST, CHARLOTTE, NC, 28205",
+      "match": "Match"
+    },
+    "wellspring-church-charlotte": {
+      "lat": 35.141824581186,
+      "lng": -80.742948827781,
+      "matched_address": "1404 ORCHARD LAKE DR, CHARLOTTE, NC, 28270",
+      "match": "Match"
+    },
+    "mecklenburg-community-church-charlotte": {
+      "lat": 35.356684816517,
+      "lng": -80.79767775479,
+      "matched_address": "8335 BROWNE RD, CHARLOTTE, NC, 28269",
+      "match": "Match"
+    },
+    "beloved-community-church-charlotte": {
+      "lat": 35.200806609505,
+      "lng": -80.731389698683,
+      "matched_address": "6824 DEMOCRACY DR, CHARLOTTE, NC, 28212",
+      "match": "Match"
+    },
+    "abundant-life-church-matthews": {
+      "lat": 35.135398585248,
+      "lng": -80.683818403577,
+      "matched_address": "3321 MATTHEWS-MINT HILL RD, MATTHEWS, NC, 28105",
+      "match": "Match"
+    },
+    "first-baptist-church-of-charlotte-charlotte": {
+      "lat": 35.221223176691,
+      "lng": -80.840290839208,
+      "matched_address": "301 S DAVIDSON ST, CHARLOTTE, NC, 28202",
+      "match": "Match"
+    },
+    "mckee-road-baptist-church-charlotte": {
+      "lat": 35.067853561097,
+      "lng": -80.757737357249,
+      "matched_address": "4300 MCKEE RD, CHARLOTTE, NC, 28270",
+      "match": "Match"
+    },
+    "inclusion-community-cornelius": {
+      "lat": 35.482723512172,
+      "lng": -80.862493184551,
+      "matched_address": "21209 CATAWBA AVE, CORNELIUS, NC, 28031",
+      "match": "Match"
+    },
+    "bible-baptist-church-matthews": {
+      "lat": 35.160578209943,
+      "lng": -80.73021053529,
+      "matched_address": "2724 MARGARET WALLACE RD, MATTHEWS, NC, 28105",
+      "match": "Match"
+    },
+    "central-united-methodist-church-charlotte": {
+      "lat": 35.203116126325,
+      "lng": -80.743266500354,
+      "matched_address": "6030 ALBEMARLE RD, CHARLOTTE, NC, 28212",
+      "match": "Match"
+    },
+    "desiring-god-community-church-charlotte": {
+      "lat": 35.252551006352,
+      "lng": -80.734131722431,
+      "matched_address": "7121 DELTA LAKE DR, CHARLOTTE, NC, 28215",
+      "match": "Match"
+    },
+    "pineville-church-charlotte": {
+      "lat": 35.08814411064,
+      "lng": -80.865439312883,
+      "matched_address": "8614 PINEVILLE MATTHEWS RD, CHARLOTTE, NC, 28226",
+      "match": "Match"
+    },
+    "citizens-church-charlotte": {
+      "lat": 35.218574593194,
+      "lng": -80.848928055475,
+      "matched_address": "400 E MOREHEAD ST, CHARLOTTE, NC, 28202",
+      "match": "Match"
+    },
+    "robinson-presbyterian-church-charlotte": {
+      "lat": 35.237118573814,
+      "lng": -80.669398767986,
+      "matched_address": "9424 HARRISBURG RD, CHARLOTTE, NC, 28215",
+      "match": "Match"
+    },
+    "life-baptist-church-charlotte": {
+      "lat": 35.268808271833,
+      "lng": -80.774875758324,
+      "matched_address": "5901 AMBERLY LN, CHARLOTTE, NC, 28213",
+      "match": "Match"
+    },
+    "providence-united-methodist-church-charlotte": {
+      "lat": 35.171935493553,
+      "lng": -80.809402904061,
+      "matched_address": "2810 PROVIDENCE RD, CHARLOTTE, NC, 28211",
+      "match": "Match"
+    },
+    "st-patrick-cathedral-charlotte": {
+      "lat": 35.206338698058,
+      "lng": -80.845740688339,
+      "matched_address": "1621 DILWORTH RD E, CHARLOTTE, NC, 28203",
+      "match": "Match"
+    },
+    "faith-christian-methodist-episcopal-church-charlotte": {
+      "lat": 35.264272943368,
+      "lng": -80.787863678419,
+      "matched_address": "457 WELLINGFORD ST, CHARLOTTE, NC, 28213",
+      "match": "Match"
+    },
+    "shady-brook-baptist-church-charlotte": {
+      "lat": 35.27686984692,
+      "lng": -80.971416482465,
+      "matched_address": "2940 BELMEADE DR, CHARLOTTE, NC, 28214",
+      "match": "Match"
+    },
+    "woodlawn-community-fellowship-charlotte": {
+      "lat": 35.173414455839,
+      "lng": -80.867478434061,
+      "matched_address": "737 E WOODLAWN RD, CHARLOTTE, NC, 28209",
+      "match": "Match"
+    },
+    "light-of-christ-united-methodist-church-charlotte": {
+      "lat": 35.046580885263,
+      "lng": -80.823663204502,
+      "matched_address": "9106 BRYANT FARMS RD, CHARLOTTE, NC, 28277",
+      "match": "Match"
+    },
+    "providence-baptist-church-charlotte": {
+      "lat": 35.169729505616,
+      "lng": -80.795753034391,
+      "matched_address": "4921 RANDOLPH RD, CHARLOTTE, NC, 28211",
+      "match": "Match"
+    },
+    "matthews-presbyterian-church-matthews": {
+      "lat": 35.116815078068,
+      "lng": -80.723873436909,
+      "matched_address": "207 W JOHN ST, MATTHEWS, NC, 28105",
+      "match": "Match"
+    },
+    "hawthorne-lane-united-methodist-church-charlotte": {
+      "lat": 35.216716028278,
+      "lng": -80.821056399384,
+      "matched_address": "501 HAWTHORNE LN, CHARLOTTE, NC, 28204",
+      "match": "Match"
+    },
+    "pleasant-plains-baptist-church-matthews": {
+      "lat": 35.084352493986,
+      "lng": -80.707025363788,
+      "matched_address": "3316 PLEASANT PLAINS RD, MATTHEWS, NC, 28105",
+      "match": "Match"
+    },
+    "midwood-baptist-church-charlotte": {
+      "lat": 35.231493944816,
+      "lng": -80.801572941193,
+      "matched_address": "2029 MECKLENBURG AVE, CHARLOTTE, NC, 28205",
+      "match": "Match"
+    },
+    "st-peter-catholic-church-charlotte": {
+      "lat": 35.224039136381,
+      "lng": -80.847568623209,
+      "matched_address": "507 S TRYON ST, CHARLOTTE, NC, 28202",
+      "match": "Match"
+    },
+    "northeast-seventh-day-adventist-church-charlotte": {
+      "lat": 35.278552733159,
+      "lng": -80.779244490497,
+      "matched_address": "827 TOM HUNTER RD, CHARLOTTE, NC, 28213",
+      "match": "Match"
+    },
+    "hickory-grove-united-methodist-church-charlotte": {
+      "lat": 35.225463439202,
+      "lng": -80.721973013908,
+      "matched_address": "6401 HICKORY GROVE RD, CHARLOTTE, NC, 28215",
+      "match": "Match"
+    },
+    "cross-and-crown-lutheran-church-matthews": {
+      "lat": 35.117083677765,
+      "lng": -80.741440110033,
+      "matched_address": "300 PINEVILLE MATTHEWS RD, MATTHEWS, NC, 28105",
+      "match": "Match"
+    },
+    "sharon-baptist-church-charlotte": {
+      "lat": 35.127690676947,
+      "lng": -80.846719372118,
+      "matched_address": "6411 SHARON RD, CHARLOTTE, NC, 28210",
+      "match": "Match"
+    },
+    "third-presbyterian-church-charlotte": {
+      "lat": 35.215377174938,
+      "lng": -80.777264093899,
+      "matched_address": "4019 CENTRAL AVE, CHARLOTTE, NC, 28205",
+      "match": "Match"
+    },
+    "woodlawn-baptist-church-charlotte": {
+      "lat": 35.181873606702,
+      "lng": -80.880479424612,
+      "matched_address": "4622 NATIONS CROSSING RD, CHARLOTTE, NC, 28217",
+      "match": "Match"
+    },
+    "arlington-baptist-church-mint-hill": {
+      "lat": 35.206387179956,
+      "lng": -80.611480644277,
+      "matched_address": "9801 ARLINGTON CHURCH RD, MINT HILL, NC, 28227",
+      "match": "Match"
+    },
+    "st-joseph-catholic-church-vietnamese-charlotte": {
+      "lat": 35.167093206218,
+      "lng": -80.954281832496,
+      "matched_address": "4929 SANDY PORTER RD, CHARLOTTE, NC, 28273",
+      "match": "Match"
+    },
+    "living-faith-baptist-church-charlotte": {
+      "lat": 35.258659252633,
+      "lng": -80.690131232036,
+      "matched_address": "8600 HOOD RD, CHARLOTTE, NC, 28215",
+      "match": "Match"
+    },
+    "mount-zion-united-methodist-church-cornelius": {
+      "lat": 35.47630488483,
+      "lng": -80.854210156226,
+      "matched_address": "19600 ZION AVE, CORNELIUS, NC, 28031",
+      "match": "Match"
+    },
+    "resurrection-church-charlotte": {
+      "lat": 35.210656616921,
+      "lng": -80.79669732601,
+      "matched_address": "2940 COMMONWEALTH AVE, CHARLOTTE, NC, 28205",
+      "match": "Match"
+    },
+    "sharon-seventh-day-adventist-church-charlotte": {
+      "lat": 35.178050005403,
+      "lng": -80.785242509858,
+      "matched_address": "920 N SHARON AMITY RD, CHARLOTTE, NC, 28211",
+      "match": "Match"
+    },
+    "university-hills-baptist-church-charlotte": {
+      "lat": 35.299905541364,
+      "lng": -80.727390704166,
+      "matched_address": "1500 SUTHER RD, CHARLOTTE, NC, 28213",
+      "match": "Match"
+    },
+    "davidson-college-presbyterian-church-davidson": {
+      "lat": 35.499218300522,
+      "lng": -80.84856572305,
+      "matched_address": "100 S MAIN ST, DAVIDSON, NC, 28036",
+      "match": "Match"
+    },
+    "refinery-church-mint-hill": {
+      "lat": 35.174373770878,
+      "lng": -80.657880070975,
+      "matched_address": "11231 LAWYERS RD, MINT HILL, NC, 28227",
+      "match": "Match"
+    },
+    "st-luke-catholic-church-mint-hill": {
+      "lat": 35.173329341249,
+      "lng": -80.61917569943,
+      "matched_address": "9800 FAIRVIEW RD, MINT HILL, NC, 28227",
+      "match": "Match"
+    },
+    "hoskins-avenue-baptist-church-charlotte": {
+      "lat": 35.265323743625,
+      "lng": -80.884333623945,
+      "matched_address": "101 S HOSKINS RD, CHARLOTTE, NC, 28208",
+      "match": "Match"
+    },
+    "calvary-baptist-church-charlotte": {
+      "lat": 35.31856995859,
+      "lng": -80.955049698101,
+      "matched_address": "2727 MOUNT HOLLY-HUNTERSVILLE RD, CHARLOTTE, NC, 28214",
+      "match": "Match"
+    },
+    "woodland-presbyterian-church-charlotte": {
+      "lat": 35.281214603474,
+      "lng": -80.966815529919,
+      "matched_address": "900 RHYNE RD, CHARLOTTE, NC, 28214",
+      "match": "Match"
+    },
+    "our-lady-of-the-assumption-catholic-church-charlotte": {
+      "lat": 35.231047946004,
+      "lng": -80.753670416277,
+      "matched_address": "4207 SHAMROCK DR, CHARLOTTE, NC, 28215",
+      "match": "Match"
+    },
+    "trinity-presbyterian-church-charlotte": {
+      "lat": 35.168361645482,
+      "lng": -80.804639808163,
+      "matched_address": "3115 PROVIDENCE RD, CHARLOTTE, NC, 28211",
+      "match": "Match"
+    },
+    "south-mecklenburg-presbyterian-church-charlotte": {
+      "lat": 35.047193115137,
+      "lng": -80.815938077546,
+      "matched_address": "8601 BRYANT FARMS RD, CHARLOTTE, NC, 28277",
+      "match": "Match"
+    },
+    "trinity-united-methodist-church-charlotte": {
+      "lat": 35.319420517,
+      "lng": -80.864829744866,
+      "matched_address": "6230 BEATTIES FORD RD, CHARLOTTE, NC, 28216",
+      "match": "Match"
+    },
+    "saint-martins-episcopal-church-charlotte": {
+      "lat": 35.217671382726,
+      "lng": -80.824900694892,
+      "matched_address": "1510 E 7TH ST, CHARLOTTE, NC, 28204",
+      "match": "Match"
+    },
+    "grace-bible-church-charlotte": {
+      "lat": 35.176940251591,
+      "lng": -80.720749807192,
+      "matched_address": "8820 IDLEWILD RD, CHARLOTTE, NC, 28227",
+      "match": "Match"
+    },
+    "paw-creek-presbyterian-church-charlotte": {
+      "lat": 35.279507391076,
+      "lng": -80.930433998848,
+      "matched_address": "7400 MOUNT HOLLY RD, CHARLOTTE, NC, 28214",
+      "match": "Match"
+    },
+    "the-vine-united-methodist-church-charlotte": {
+      "lat": 35.227201227495,
+      "lng": -80.804201383056,
+      "matched_address": "2101 BELVEDERE AVE, CHARLOTTE, NC, 28205",
+      "match": "Match"
+    },
+    "mallard-creek-presbyterian-church-charlotte": {
+      "lat": 35.333351417797,
+      "lng": -80.748548995419,
+      "matched_address": "1600 W MALLARD CREEK CHURCH RD, CHARLOTTE, NC, 28262",
+      "match": "Match"
+    },
+    "plaza-baptist-church-charlotte": {
+      "lat": 35.24128453643,
+      "lng": -80.796487969477,
+      "matched_address": "3321 THE PLAZA, CHARLOTTE, NC, 28205",
+      "match": "Match"
+    },
+    "christ-lutheran-church-charlotte": {
+      "lat": 35.152644477711,
+      "lng": -80.793669733462,
+      "matched_address": "4519 PROVIDENCE RD, CHARLOTTE, NC, 28226",
+      "match": "Match"
+    },
+    "mission-city-church-charlotte": {
+      "lat": 35.288290460026,
+      "lng": -80.924835688079,
+      "matched_address": "608 VALLEYDALE RD, CHARLOTTE, NC, 28214",
+      "match": "Match"
+    },
+    "st-stephen-united-methodist-church-charlotte": {
+      "lat": 35.14754237954,
+      "lng": -80.772446190223,
+      "matched_address": "6800 SARDIS RD, CHARLOTTE, NC, 28270",
+      "match": "Match"
+    },
+    "st-andrews-united-methodist-church-charlotte": {
+      "lat": 35.15098120632,
+      "lng": -80.869096068745,
+      "matched_address": "1901 ARCHDALE DR, CHARLOTTE, NC, 28210",
+      "match": "Match"
+    },
+    "elevation-church-charlotte": {
+      "lat": 35.03072379293,
+      "lng": -80.855222542747,
+      "matched_address": "11701 ELEVATION POINT DR, CHARLOTTE, NC, 28277",
+      "match": "Match"
+    },
+    "neighborhood-church-huntersville": {
+      "lat": 35.420159259737,
+      "lng": -80.839761968558,
+      "matched_address": "201 SEAGLE ST, HUNTERSVILLE, NC, 28078",
+      "match": "Match"
+    },
+    "derita-presbyterian-church-charlotte": {
+      "lat": 35.292729867701,
+      "lng": -80.796715813342,
+      "matched_address": "2230 W SUGAR CREEK RD, CHARLOTTE, NC, 28262",
+      "match": "Match"
+    },
+    "covenant-united-methodist-church-charlotte": {
+      "lat": 35.246788603475,
+      "lng": -80.93994376084,
+      "matched_address": "6824 TUCKASEEGEE RD, CHARLOTTE, NC, 28214",
+      "match": "Match"
+    },
+    "eastern-hills-baptist-church-charlotte": {
+      "lat": 35.200050696341,
+      "lng": -80.76558566576,
+      "matched_address": "4855 ALBEMARLE RD, CHARLOTTE, NC, 28205",
+      "match": "Match"
+    },
+    "dilworth-united-methodist-church-charlotte": {
+      "lat": 35.208285724828,
+      "lng": -80.85298500898,
+      "matched_address": "605 EAST BLVD, CHARLOTTE, NC, 28203",
+      "match": "Match"
+    },
+    "simpson-gillespie-united-methodist-church-charlotte": {
+      "lat": 35.281683273744,
+      "lng": -80.856935862792,
+      "matched_address": "3545 BEATTIES FORD RD, CHARLOTTE, NC, 28216",
+      "match": "Match"
+    },
+    "myers-park-presbyterian-church-charlotte": {
+      "lat": 35.193012085551,
+      "lng": -80.826410403006,
+      "matched_address": "2501 OXFORD PL, CHARLOTTE, NC, 28207",
+      "match": "Match"
+    },
+    "lake-norman-baptist-church-huntersville": {
+      "lat": 35.444663792655,
+      "lng": -80.893985259204,
+      "matched_address": "7921 SAM FURR RD, HUNTERSVILLE, NC, 28078",
+      "match": "Match"
+    },
+    "hickory-grove-baptist-church-charlotte": {
+      "lat": 35.221893995671,
+      "lng": -80.724360134361,
+      "matched_address": "7200 E WT HARRIS BLVD, CHARLOTTE, NC, 28227",
+      "match": "Match"
+    },
+    "st-matthew-catholic-church-charlotte": {
+      "lat": 35.057713957686,
+      "lng": -80.813925525745,
+      "matched_address": "8015 BALLANTYNE COMMONS PKWY, CHARLOTTE, NC, 28277",
+      "match": "Match"
+    },
+    "first-united-methodist-church-charlotte": {
+      "lat": 35.230326750064,
+      "lng": -80.83872785313,
+      "matched_address": "501 N TRYON ST, CHARLOTTE, NC, 28202",
+      "match": "Match"
+    },
+    "westminster-presbyterian-church-charlotte": {
+      "lat": 35.20434430185,
+      "lng": -80.818479320039,
+      "matched_address": "101 COLVILLE RD, CHARLOTTE, NC, 28207",
+      "match": "Match"
+    },
+    "saint-michael-the-archangel-anglican-church-matthews": {
+      "lat": 35.164041582161,
+      "lng": -80.736442234307,
+      "matched_address": "2211 MARGARET WALLACE RD, MATTHEWS, NC, 28105",
+      "match": "Match"
+    },
+    "first-baptist-church-matthews-matthews": {
+      "lat": 35.114853383494,
+      "lng": -80.723386936166,
+      "matched_address": "185 S TRADE ST, MATTHEWS, NC, 28105",
+      "match": "Match"
+    },
+    "harrison-united-methodist-church-pineville": {
+      "lat": 35.042566981218,
+      "lng": -80.863767973154,
+      "matched_address": "15008 LANCASTER HWY, PINEVILLE, NC, 28134",
+      "match": "Match"
+    },
+    "first-united-presbyterian-church-charlotte": {
+      "lat": 35.228621357298,
+      "lng": -80.838543775973,
+      "matched_address": "406 N COLLEGE ST, CHARLOTTE, NC, 28202",
+      "match": "Match"
+    },
+    "hillcrest-baptist-church-charlotte": {
+      "lat": 35.304895037978,
+      "lng": -80.937896462245,
+      "matched_address": "8501 BELLHAVEN BLVD, CHARLOTTE, NC, 28214",
+      "match": "Match"
+    },
+    "sharon-presbyterian-church-charlotte": {
+      "lat": 35.141431395948,
+      "lng": -80.835123619885,
+      "matched_address": "5201 SHARON RD, CHARLOTTE, NC, 28210",
+      "match": "Match"
+    },
+    "cokesbury-united-methodist-church-charlotte": {
+      "lat": 35.184646502317,
+      "lng": -80.74922878012,
+      "matched_address": "6701 IDLEWILD RD, CHARLOTTE, NC, 28212",
+      "match": "Match"
+    },
+    "mint-hill-baptist-church-mint-hill": {
+      "lat": 35.178737040607,
+      "lng": -80.649456011442,
+      "matched_address": "7835 MATTHEWS-MINT HILL RD, MINT HILL, NC, 28227",
+      "match": "Match"
+    },
+    "romanian-baptist-church-of-charlotte-charlotte": {
+      "lat": 35.295334615117,
+      "lng": -80.721998784633,
+      "matched_address": "9520 FAIRES FARM RD, CHARLOTTE, NC, 28213",
+      "match": "Match"
+    },
+    "davidson-united-methodist-church-davidson": {
+      "lat": 35.497310641319,
+      "lng": -80.850522265102,
+      "matched_address": "233 S MAIN ST, DAVIDSON, NC, 28036",
+      "match": "Match"
+    },
+    "our-lady-of-consolation-catholic-church-charlotte": {
+      "lat": 35.252202871806,
+      "lng": -80.836002805736,
+      "matched_address": "2301 STATESVILLE AVE, CHARLOTTE, NC, 28206",
+      "match": "Match"
+    },
+    "sedgefield-united-methodist-church-charlotte": {
+      "lat": 35.195920805429,
+      "lng": -80.860404598128,
+      "matched_address": "2830 DORCHESTER PL, CHARLOTTE, NC, 28209",
+      "match": "Match"
+    },
+    "st-marks-lutheran-church-charlotte": {
+      "lat": 35.202026822702,
+      "lng": -80.83261499496,
+      "matched_address": "1001 QUEENS RD, CHARLOTTE, NC, 28207",
+      "match": "Match"
+    },
+    "charlotte-chinese-baptist-church-charlotte": {
+      "lat": 35.224741470442,
+      "lng": -80.709509275765,
+      "matched_address": "7225 PENCE RD, CHARLOTTE, NC, 28215",
+      "match": "Match"
+    },
+    "philadelphia-presbyterian-church-mint-hill": {
+      "lat": 35.175921859486,
+      "lng": -80.647984543219,
+      "matched_address": "11501 BAIN SCHOOL RD, MINT HILL, NC, 28227",
+      "match": "Match"
+    },
+    "covenant-presbyterian-church-charlotte": {
+      "lat": 35.212926369563,
+      "lng": -80.843900283787,
+      "matched_address": "1000 E MOREHEAD ST, CHARLOTTE, NC, 28204",
+      "match": "Match"
+    },
+    "memorial-united-methodist-church-charlotte": {
+      "lat": 35.215269028032,
+      "lng": -80.777363584182,
+      "matched_address": "4012 CENTRAL AVE, CHARLOTTE, NC, 28205",
+      "match": "Match"
+    },
+    "myers-park-united-methodist-church-charlotte": {
+      "lat": 35.194800013944,
+      "lng": -80.82762188842,
+      "matched_address": "1501 QUEENS RD, CHARLOTTE, NC, 28207",
+      "match": "Match"
+    },
+    "first-presbyterian-church-charlotte": {
+      "lat": 35.228211962647,
+      "lng": -80.844161383946,
+      "matched_address": "200 W TRADE ST, CHARLOTTE, NC, 28202",
+      "match": "Match"
+    },
+    "pleasant-grove-united-methodist-church-charlotte": {
+      "lat": 35.303072372441,
+      "lng": -80.896684878155,
+      "matched_address": "1915 OAKDALE RD, CHARLOTTE, NC, 28216",
+      "match": "Match"
+    },
+    "oakhurst-baptist-church-charlotte": {
+      "lat": 35.191402413462,
+      "lng": -80.776919643328,
+      "matched_address": "5037 MONROE RD, CHARLOTTE, NC, 28205",
+      "match": "Match"
+    },
+    "university-city-united-methodist-church-charlotte": {
+      "lat": 35.332678146365,
+      "lng": -80.795872036005,
+      "matched_address": "3835 W W T HARRIS BLVD, CHARLOTTE, NC, 28269",
+      "match": "Match"
+    },
+    "the-grove-presbyterian-church-charlotte": {
+      "lat": 35.335512239161,
+      "lng": -80.826689418551,
+      "matched_address": "5735 W W T HARRIS BLVD, CHARLOTTE, NC, 28269",
+      "match": "Match"
+    },
+    "carmel-baptist-church-matthews": {
+      "lat": 35.114122245232,
+      "lng": -80.754089983189,
+      "matched_address": "1145 PINEVILLE MATTHEWS RD, MATTHEWS, NC, 28105",
+      "match": "Match"
+    },
+    "new-hope-baptist-church-charlotte": {
+      "lat": 35.186617996481,
+      "lng": -80.731821982473,
+      "matched_address": "7841 IDLEWILD RD, CHARLOTTE, NC, 28212",
+      "match": "Match"
+    },
+    "wilson-grove-baptist-church-mint-hill": {
+      "lat": 35.204216971628,
+      "lng": -80.670201388431,
+      "matched_address": "6624 WILGROVE MINT HILL RD, MINT HILL, NC, 28227",
+      "match": "Match"
+    },
+    "stonebridge-church-community-charlotte": {
+      "lat": 35.348047941421,
+      "lng": -80.774170693094,
+      "matched_address": "3700 PROSPERITY CHURCH RD, CHARLOTTE, NC, 28269",
+      "match": "Match"
+    }
+  }
+}
