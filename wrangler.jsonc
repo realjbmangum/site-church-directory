@@ -36,5 +36,23 @@
       "binding": "ASSETS_BUCKET",
       "bucket_name": "church-directory-assets"
     }
-  ]
+  ],
+  // Branch previews read the same directory. Wrangler will not create a
+  // Preview until these bindings are named here. This does not create a
+  // database, a bucket, or a domain.
+  "previews": {
+    "d1_databases": [
+      {
+        "binding": "DB",
+        "database_name": "church-directory",
+        "database_id": "7aeb3846-7268-45bb-bb4d-dcd567cb84bd"
+      }
+    ],
+    "r2_buckets": [
+      {
+        "binding": "ASSETS_BUCKET",
+        "bucket_name": "church-directory-assets"
+      }
+    ]
+  }
 }
