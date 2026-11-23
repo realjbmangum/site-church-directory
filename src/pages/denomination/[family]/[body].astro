@@ -1,50 +1,15 @@
 ---
-import Layout from '../../../layouts/Layout.astro';
-import ChurchCard from '../../../components/ChurchCard.astro';
-import DatabaseMissing from '../../../components/DatabaseMissing.astro';
 import { getDb } from '../../../lib/db';
-import { churchesInBody, getBody } from '../../../lib/queries';
+import { getBody } from '../../../lib/queries';
+import { churchTypeName, churchTypeSlug } from '@shared/church-types';
 
 const db = getDb(Astro.locals);
 const body = db ? await getBody(db, Astro.params.family ?? '', Astro.params.body ?? '') : null;
-if (db && !body) Astro.response.status = 404;
-const churches = db && body ? await churchesInBody(db, body.id) : [];
-const path = `/denomination/${body?.family_slug ?? ''}/${body?.slug ?? ''}`;
+if (body) {
+  const type = churchTypeName(body.family_name, body.name, null);
+  return Astro.redirect(`/denomination/${churchTypeSlug(type)}`);
+}
+Astro.response.status = 404;
 ---
 
-<Layout
-  title={body ? `${body.name}` : 'Denomination body'}
-  path={path}
-  description={body ? `${body.name} churches in the ${body.family_name} family around Charlotte.` : 'Denomination body'}
->
-  {db ? (
-    body ? (
-      <div class="page wrap">
-        <nav class="crumbs" aria-label="Breadcrumb">
-          <a href="/denomination">Denominations</a>
-          <span aria-hidden="true">/</span>
-          <a href={`/denomination/${body.family_slug}`}>{body.family_name}</a>
-        </nav>
-        <h1 style="margin-top: 0.6rem">{body.name}</h1>
-        {body.historically_black_tradition === 1 && (
-          <p class="chip-row"><span class="badge">Historically Black tradition</span></p>
-        )}
-        <p class="lede">{churches.length} {churches.length === 1 ? 'church' : 'churches'} in the Charlotte pilot.</p>
-        {churches.length === 0 ? (
-          <p class="notice">No open churches in this body yet.</p>
-        ) : (
-          <div class="card-grid cols-3">
-            {churches.map((church) => (
-              <ChurchCard slug={church.slug} name={church.name} familyName={church.family_name} bodyName={church.body_name} city={church.city} state={church.state} sunday={church.earliest_sunday_time} languages={church.languages_text} serviceTimes={church.service_times} photoKey={church.photo_key} historicallyBlack={Boolean(church.historically_black_tradition)} />
-            ))}
-          </div>
-        )}
-      </div>
-    ) : (
-      <div class="page wrap">
-        <h1>That denomination body is not listed.</h1>
-        <p class="lede"><a class="btn-secondary" href="/denomination">Back to families</a></p>
-      </div>
-    )
-  ) : <DatabaseMissing />}
-</Layout>
+<p>That page has moved. <a href="/denomination">Church types</a></p>

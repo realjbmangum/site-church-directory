@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import DatabaseMissing from '../../components/DatabaseMissing.astro';
 import { getDb } from '../../lib/db';
 import { getChurch } from '../../lib/queries';
+import { beliefsLink, listAttributes, proofBadges, quoteHint, specificBodyLine, toSearchable } from '../../lib/attributes';
 import { directionsUrl, formatChecked, mediaUrl, placeLine, proofLabel, safeHttpUrl, serviceLines, telHref } from '../../lib/format';
 import { canonicalUrl } from '../../lib/site';
 import 'leaflet/dist/leaflet.css';
@@ -20,8 +21,14 @@ const checked = formatChecked(church?.date_checked);
 const photo = mediaUrl(church?.photo_key);
 const logo = mediaUrl(church?.logo_key);
 const directions = church ? directionsUrl(church) : null;
+const attributes = db ? await listAttributes(db) : { rows: [], ready: false };
+const attribute = church ? attributes.rows.find((row) => row.church_id === church.id) : undefined;
+const facts = church ? toSearchable(church, attribute) : null;
+const badges = proofBadges(attribute);
+const beliefs = beliefsLink(attribute);
+const partOf = church ? specificBodyLine(church, attribute) : null;
 const description = church
-  ? `${church.name} in ${placeLine(church) || 'the Charlotte area'}. ${church.family_name || 'Denomination not stated'}. Service times as the church lists them.`
+  ? `${church.name} in ${placeLine(church) || 'the Charlotte area'}. ${facts?.typeName || 'Church type not listed yet'}. Service times as the church lists them.`
   : 'Church listing';
 
 const jsonLd = church
@@ -43,7 +50,7 @@ const jsonLd = church
       ...(church.latitude != null && church.longitude != null
         ? { geo: { '@type': 'GeoCoordinates', latitude: church.latitude, longitude: church.longitude } }
         : {}),
-      ...(church.family_name ? { additionalProperty: { '@type': 'PropertyValue', name: 'denomination', value: church.body_name || church.family_name } } : {}),
+      ...(facts?.typeName ? { additionalProperty: { '@type': 'PropertyValue', name: 'churchType', value: facts.typeName } } : {}),
     }
   : null;
 ---
@@ -60,10 +67,10 @@ const jsonLd = church
               <a href={`/city/${church.city_id}`}>{church.city}</a>
             </>
           )}
-          {church.family_slug && (
+          {facts?.typeSlug && (
             <>
               <span aria-hidden="true">/</span>
-              <a href={`/denomination/${church.family_slug}`}>{church.family_name}</a>
+              <a href={`/denomination/${facts.typeSlug}`}>{facts.typeName}</a>
             </>
           )}
         </nav>
@@ -73,8 +80,9 @@ const jsonLd = church
             <h1>{church.name}</h1>
             {church.campus_name && <p class="meta" style="margin-top: 0.4rem">Campus: {church.campus_name}</p>}
             <p class="meta" style="margin-top: 0.35rem">{placeLine(church)}</p>
+            {partOf && <p class="meta" style="margin-top: 0.2rem">{partOf}</p>}
             <p class="chip-row">
-              {church.family_name && <span class="badge">{church.family_name}</span>}
+              {facts?.typeName && <a class="badge" href={`/denomination/${facts.typeSlug}`}>{facts.typeName}</a>}
               {church.historically_black_tradition ? <span class="badge">Historically Black tradition</span> : null}
               {closed && <span class="badge badge-closed">Marked closed</span>}
             </p>
@@ -122,16 +130,30 @@ const jsonLd = church
               )}
             </section>
 
+            {(badges.length > 0 || beliefs) && (
+              <section class="panel" style="margin-top: 1rem">
+                <h2>From their website</h2>
+                <p class="quiet">Shown only when the church's own site says it. If we did not find a fact, it is left off. That is not a no.</p>
+                <div class="proof-badges">
+                  {badges.map((item) => (
+                    <p class="proof-badge">
+                      <span>{item.label}</span>
+                      {item.url && <a href={item.url} rel="noopener noreferrer" title={quoteHint(attribute, item.label) || undefined}>from their website</a>}
+                    </p>
+                  ))}
+                </div>
+                {beliefs && <p style="margin-top: 0.9rem"><a class="btn-secondary" href={beliefs} rel="noopener noreferrer">Beliefs page</a></p>}
+              </section>
+            )}
+
             <section class="panel" style="margin-top: 1rem">
-              <h2>Denomination and languages</h2>
+              <h2>Church type and languages</h2>
               <dl class="dl-grid">
-                <div><dt>Family</dt><dd>{church.family_name || 'Not stated'}</dd></div>
-                <div><dt>Specific body</dt><dd>{church.body_name || 'Not stated'}</dd></div>
+                <div><dt>Church type</dt><dd>{facts?.typeName || 'Not listed yet'}</dd></div>
                 <div><dt>Languages</dt><dd>{church.languages_text || 'Not listed'}</dd></div>
-                {church.denomination_evidence && <div><dt>How we know the body</dt><dd>{church.denomination_evidence}</dd></div>}
               </dl>
-              {church.body_slug && church.family_slug && (
-                <p style="margin-top: 1rem"><a class="btn-quiet" href={`/denomination/${church.family_slug}/${church.body_slug}`}>More {church.body_name} churches</a></p>
+              {facts?.typeSlug && (
+                <p style="margin-top: 1rem"><a class="btn-quiet" href={`/denomination/${facts.typeSlug}`}>More {facts.typeName} churches</a></p>
               )}
             </section>
 

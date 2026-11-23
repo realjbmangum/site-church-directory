@@ -3,18 +3,22 @@ import Layout from '../layouts/Layout.astro';
 import BarList from '../components/BarList.astro';
 import DatabaseMissing from '../components/DatabaseMissing.astro';
 import { getDb } from '../lib/db';
-import { futureFilterCounts, listIntents, listOpenChurches } from '../lib/queries';
+import { listAttributes, toSearchable } from '../lib/attributes';
+import { listIntents, listOpenChurches } from '../lib/queries';
+import { churchTypeSlug } from '@shared/church-types';
 import { TIME_BUCKETS, timeBucket } from '@shared/time';
 
 const db = getDb(Astro.locals);
 const churches = db ? await listOpenChurches(db) : [];
 const intents = db ? await listIntents(db) : [];
-const future = db ? await futureFilterCounts(db) : null;
+const attributes = db ? await listAttributes(db) : { rows: [], ready: false };
+const byId = new Map(attributes.rows.map((row) => [row.church_id, row]));
+const facts = churches.map((church) => ({ church, search: toSearchable(church, byId.get(church.id)) }));
 
-function countBy(key: (church: (typeof churches)[number]) => string) {
+function countBy(key: (row: (typeof facts)[number]) => string) {
   const map = new Map<string, number>();
-  for (const church of churches) {
-    const label = key(church) || 'Not stated';
+  for (const row of facts) {
+    const label = key(row) || 'Not stated';
     map.set(label, (map.get(label) ?? 0) + 1);
   }
   return [...map.entries()]
@@ -22,67 +26,88 @@ function countBy(key: (church: (typeof churches)[number]) => string) {
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
 }
 
-const byFamily = countBy((church) => church.family_name || 'Not stated').map((row) => ({
+const byType = countBy((row) => row.search.typeName).map((row) => ({
   ...row,
-  href: churches.find((church) => (church.family_name || 'Not stated') === row.label)?.family_slug
-    ? `/denomination/${churches.find((church) => (church.family_name || 'Not stated') === row.label)?.family_slug}`
-    : undefined,
+  href: `/denomination/${churchTypeSlug(row.label)}`,
 }));
-const byCity = countBy((church) => church.city || 'City not listed').map((row) => {
-  const match = churches.find((church) => (church.city || 'City not listed') === row.label);
-  return { ...row, href: match?.city_id ? `/city/${match.city_id}` : undefined };
+const byCity = countBy((row) => row.church.city || 'City not listed').map((row) => {
+  const match = facts.find((item) => (item.church.city || 'City not listed') === row.label);
+  return { ...row, href: match?.church.city_id ? `/city/${match.church.city_id}` : undefined };
 });
 const languageCounts = new Map<string, number>();
-for (const church of churches) {
-  const languages = (church.languages_text || 'Not listed').split(';').map((part) => part.trim()).filter(Boolean);
+for (const row of facts) {
+  const languages = row.search.languages.length ? row.search.languages : ['Not listed'];
   for (const language of languages) languageCounts.set(language, (languageCounts.get(language) ?? 0) + 1);
 }
-const byLanguage = [...languageCounts.entries()].map(([label, count]) => ({ label, count, href: `/map?language=${encodeURIComponent(label)}` })).sort((a, b) => b.count - a.count);
+const byLanguage = [...languageCounts.entries()].map(([label, count]) => ({
+  label,
+  count,
+  href: label === 'Not listed' ? undefined : `/map?language=${encodeURIComponent(label)}`,
+})).sort((a, b) => b.count - a.count);
 const byTime = TIME_BUCKETS.map((bucket) => ({
   label: bucket.label,
-  count: churches.filter((church) => timeBucket(church.earliest_sunday_minutes) === bucket.id).length,
-  href: `/map?time=${bucket.id}`,
+  count: facts.filter((row) => timeBucket(row.church.earliest_sunday_minutes) === bucket.id).length,
+  href: bucket.id === 'not-listed' ? undefined : `/map?time=${bucket.id}`,
 })).filter((row) => row.count > 0);
+const stated = [
+  ['Kids ministry', facts.filter((row) => row.search.kids).length, '/map?kids=1'],
+  ['Youth group', facts.filter((row) => row.search.youth).length, '/map?youth=1'],
+  ['Nursery', facts.filter((row) => row.search.nursery).length, '/map?nursery=1'],
+  ['Young adults', facts.filter((row) => row.search.youngAdults).length, '/map?young=1'],
+  ['Choir', facts.filter((row) => row.search.choir).length, '/map?choir=1'],
+  ['Livestream', facts.filter((row) => row.search.livestream).length, '/map?live=1'],
+  ['Small groups or Bible study', facts.filter((row) => row.search.groups).length, '/map?groups=1'],
+  ['School or preschool', facts.filter((row) => row.search.school).length, '/map?school=1'],
+].map(([label, count, href]) => ({ label: String(label), count: Number(count), href: String(href) }));
+const worshipLabels: Record<string, string> = { traditional: 'Traditional', contemporary: 'Contemporary', liturgical: 'Liturgical', blended: 'Blended', gospel: 'Gospel', charismatic: 'Charismatic' };
+const outreachLabels: Record<string, string> = { 'community-service': 'Community service', missions: 'Missions', 'food-pantry': 'Food pantry', grief: 'Grief and care', recovery: 'Recovery', esl: 'ESL' };
+function tokenRows(pick: (row: (typeof facts)[number]) => string[], labels: Record<string, string>, param: string) {
+  const counts = new Map<string, number>();
+  for (const row of facts) {
+    for (const token of pick(row)) counts.set(token, (counts.get(token) ?? 0) + 1);
+  }
+  return [...counts.entries()]
+    .map(([token, count]) => ({ label: labels[token] || token, count, href: `/map?${param}=${encodeURIComponent(token)}` }))
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+}
+const byWorship = tokenRows((row) => row.search.worship, worshipLabels, 'worship');
+const byOutreach = tokenRows((row) => row.search.outreach, outreachLabels, 'outreach');
 
-const tableRows = churches.map((church) => ({
+const tableRows = facts.map(({ church, search }) => ({
   name: church.name,
   slug: church.slug,
-  family: church.family_name || 'Not stated',
-  body: church.body_name || 'Not stated',
+  type: search.typeName,
   city: church.city || '',
   zip: church.zip || '',
   languages: church.languages_text || '',
   sunday: church.earliest_sunday_time || '',
-  proof: church.proof_strength === 'strong' ? 'Strong' : church.proof_strength ? 'Needs another look' : 'Not checked',
+  worship: search.worship.join(', '),
+  outreach: search.outreach.join(', '),
 }));
-const familyOptions = [...new Set(tableRows.map((row) => row.family))].sort();
+const typeOptions = [...new Set(tableRows.map((row) => row.type))].sort();
 const cityOptions = [...new Set(tableRows.map((row) => row.city).filter(Boolean))].sort();
-const futureRows = [
-  ['Kids and youth', future?.kids_youth ?? 0],
-  ['Worship style', future?.worship_style ?? 0],
-  ['Theology', future?.theology ?? 0],
-  ['Young adults', future?.young_adults ?? 0],
-  ['LGBTQ stance', future?.lgbtq_stance ?? 0],
-  ['Outreach', future?.outreach ?? 0],
-] as const;
-const liveFilters = new Set([1, 2, 5, 6]);
-const columns = [['name','Church'],['family','Family'],['body','Body'],['city','City'],['zip','ZIP'],['languages','Languages'],['sunday','Sunday'],['proof','Proof']] as const;
+const liveRanks = new Set([1, 2, 3, 4, 5, 6, 8, 9, 12, 13]);
+const columns = [['name','Church'],['type','Church type'],['city','City'],['zip','ZIP'],['languages','Languages'],['sunday','Sunday'],['worship','Worship'],['outreach','Outreach']] as const;
 ---
 
 <Layout
   title="Charlotte church types"
   path="/analytics"
-  description="How the Charlotte pilot breaks down by denomination family, city, language, and Sunday service time."
+  description="How the Charlotte pilot breaks down by church type, city, language, service time, and what churches state on their own sites."
 >
   {db ? (
     <div class="page wrap">
       <h1>What kinds of churches are here</h1>
-      <p class="lede">Counts use the open listings in the Charlotte pilot. A church in more than one language is counted once for each language.</p>
+      <p class="lede">Counts use the open listings in the Charlotte pilot. A ministry count means the church stated it on its own site. A missing fact is not a no.</p>
+      {!attributes.ready && <p class="notice">The researched filters are not loaded in this database yet. Church type still comes from the existing listing. Ministry counts stay at zero until that seed is applied.</p>}
       <div class="chart-grid" style="margin-top: 1.75rem">
-        <BarList title="Denomination family" rows={byFamily} />
+        <BarList title="Church type" rows={byType} />
         <BarList title="City" rows={byCity} />
         <BarList title="Language" rows={byLanguage} />
         <BarList title="Earliest Sunday service" rows={byTime} />
+        <BarList title="Stated on the church site" rows={stated} />
+        <BarList title="Worship style" rows={byWorship} />
+        <BarList title="Outreach" rows={byOutreach} />
       </div>
 
       <section class="section panel">
@@ -92,12 +117,12 @@ const columns = [['name','Church'],['family','Family'],['body','Body'],['city','
         </div>
         <div class="filter-grid" style="margin-top: 1rem">
           <label>Filter this table
-            <input id="table-filter" class="field" placeholder="Name, body, language" />
+            <input id="table-filter" class="field" placeholder="Name, language, city" />
           </label>
-          <label>Family
+          <label>Church type
             <select id="table-family" class="field">
-              <option value="">Any family</option>
-              {familyOptions.map((name) => <option value={name}>{name}</option>)}
+              <option value="">Any type</option>
+              {typeOptions.map((name) => <option value={name}>{name}</option>)}
             </select>
           </label>
           <label>City
@@ -128,24 +153,9 @@ const columns = [['name','Church'],['family','Family'],['body','Body'],['city','
         </script>
       </section>
 
-      <section class="section panel">
-        <h2>Saved for later</h2>
-        <p class="quiet" style="margin-top: 0.4rem">These columns exist so we can filter on them later. They are empty until a church states the fact on its own site. We do not guess.</p>
-        <ul class="legend" style="margin-top: 0.8rem">
-          {futureRows.map(([label, count]) => (
-            <li>
-              <span style="display: flex; justify-content: space-between; gap: 1rem; min-height: 48px; align-items: center; border-bottom: 1px solid var(--line)">
-                <span>{label}</span>
-                <span class="legend-meta">{count} filled in</span>
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
       <section class="section">
         <h2>What people search for</h2>
-        <p class="quiet" style="margin-top: 0.4rem; max-width: 68ch">Ranks come from the research file that shipped with the pilot. A live filter is on the map today. The rest wait on source text from the church.</p>
+        <p class="quiet" style="margin-top: 0.4rem; max-width: 68ch">Ranks come from the research file that shipped with the pilot. A live filter is on the map today when the church's own site states the fact.</p>
         <div class="table-scroll panel" style="padding: 0.25rem 0.4rem">
           <table class="data-table">
             <thead>
@@ -160,7 +170,7 @@ const columns = [['name','Church'],['family','Family'],['body','Body'],['city','
                 <tr>
                   <td class="tabular-nums">{intent.rank}</td>
                   <td>{intent.category}</td>
-                  <td>{liveFilters.has(intent.rank) ? 'On the map' : intent.recommendation === 'Skip' || (intent.recommendation || '').startsWith('Skip') ? 'Not a filter' : 'Column ready, not filled in'}</td>
+                  <td>{liveRanks.has(intent.rank) ? 'On the map' : intent.recommendation === 'Skip' || (intent.recommendation || '').startsWith('Skip') ? 'Not a filter' : 'On the church page when the site says so'}</td>
                 </tr>
               ))}
             </tbody>

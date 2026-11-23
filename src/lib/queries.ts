@@ -6,7 +6,7 @@ const CHURCH_SELECT = `
     c.address, c.city, c.state, c.zip, c.phone, c.website, c.email,
     c.latitude, c.longitude, c.geocode_source,
     c.denomination_family_id, c.denomination_body_id, c.denomination_original, c.denomination_evidence,
-    c.languages_text, c.service_times, c.earliest_sunday_time, c.earliest_sunday_minutes,
+    c.languages_text, c.service_times, c.service_times_structured, c.earliest_sunday_time, c.earliest_sunday_minutes,
     c.proof_quote, c.proof_url, c.proof_strength, c.date_checked, c.http_note, c.note,
     c.photo_key, c.logo_key, c.kids_youth, c.worship_style, c.theology, c.young_adults, c.lgbtq_stance, c.outreach,
     c.updated_at,
@@ -42,6 +42,7 @@ export interface ChurchRecord {
   denomination_evidence: string | null;
   languages_text: string | null;
   service_times: string | null;
+  service_times_structured: string | null;
   earliest_sunday_time: string | null;
   earliest_sunday_minutes: number | null;
   proof_quote: string | null;

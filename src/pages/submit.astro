@@ -2,10 +2,10 @@
 import Layout from '../layouts/Layout.astro';
 import DatabaseMissing from '../components/DatabaseMissing.astro';
 import { getDb } from '../lib/db';
-import { listFamilies } from '../lib/queries';
+import { CHURCH_TYPE_ORDER } from '@shared/church-type-data';
 
 const db = getDb(Astro.locals);
-const families = db ? await listFamilies(db) : [];
+const types = CHURCH_TYPE_ORDER;
 const sent = Astro.url.searchParams.get('sent') === '1';
 const error = Astro.url.searchParams.get('error');
 ---
@@ -55,14 +55,14 @@ const error = Astro.url.searchParams.get('error');
         <label>Languages
           <input class="field" name="languages_text" maxlength="200" placeholder="English; Spanish" />
         </label>
-        <label>Denomination family
+        <label>Church type
           <select class="field" name="denomination_family">
             <option value="">Not sure</option>
-            {families.map((family) => <option value={family.name}>{family.name}</option>)}
+            {types.map((type) => <option value={type}>{type}</option>)}
           </select>
         </label>
         <label>Specific body, if you know it
-          <input class="field" name="denomination_body" maxlength="200" />
+          <input class="field" name="denomination_body" maxlength="200" placeholder="Southern Baptist Convention" />
         </label>
         <label>Anything else we should know
           <textarea class="field" name="note" rows="3" maxlength="1000"></textarea>

@@ -3,10 +3,14 @@ import Layout from '../layouts/Layout.astro';
 import ChurchCard from '../components/ChurchCard.astro';
 import DatabaseMissing from '../components/DatabaseMissing.astro';
 import { getDb } from '../lib/db';
+import { listAttributes, toSearchable } from '../lib/attributes';
 import { listCities, listOpenChurches, unplacedChurches } from '../lib/queries';
 
 const db = getDb(Astro.locals);
 const churches = db ? await listOpenChurches(db) : [];
+const attributes = db ? await listAttributes(db) : { rows: [], ready: false };
+const byId = new Map(attributes.rows.map((row) => [row.church_id, row]));
+const typeOf = (id: string) => toSearchable(churches.find((church) => church.id === id)!, byId.get(id)).typeName;
 const cities = db ? (await listCities(db)).filter((city) => city.church_count > 0) : [];
 const unplaced = db ? await unplacedChurches(db) : [];
 const preview = churches.filter((church) => church.city_id).slice(0, 12);
@@ -35,7 +39,7 @@ const preview = churches.filter((church) => church.city_id).slice(0, 12);
           <p class="quiet">These churches did not have a city in the source file. They stay in the directory.</p>
           <div class="card-grid" style="margin-top: 1rem">
             {unplaced.map((church) => (
-              <ChurchCard slug={church.slug} name={church.name} familyName={church.family_name} city={church.city} state={church.state} sunday={church.earliest_sunday_time} languages={church.languages_text} serviceTimes={church.service_times} />
+              <ChurchCard slug={church.slug} name={church.name} familyName={typeOf(church.id)} city={church.city} state={church.state} sunday={church.earliest_sunday_time} languages={church.languages_text} serviceTimes={church.service_times} />
             ))}
           </div>
         </section>
@@ -45,8 +49,7 @@ const preview = churches.filter((church) => church.city_id).slice(0, 12);
           <ChurchCard
             slug={church.slug}
             name={church.name}
-            familyName={church.family_name}
-            bodyName={church.body_name}
+            familyName={typeOf(church.id)}
             city={church.city}
             state={church.state}
             sunday={church.earliest_sunday_time}

@@ -35,8 +35,8 @@ const rows = db ? await listSubmissions(db, status) : [];
               <dl class="mt-3 grid sm:grid-cols-2 gap-2 text-sm">
                 <div><dt class="text-gray-500">Phone</dt><dd>{row.phone || 'Not given'}</dd></div>
                 <div><dt class="text-gray-500">Website</dt><dd>{row.website || 'Not given'}</dd></div>
-                <div><dt class="text-gray-500">Family</dt><dd>{row.denomination_family || 'Not given'}</dd></div>
-                <div><dt class="text-gray-500">Body</dt><dd>{row.denomination_body || 'Not given'}</dd></div>
+                <div><dt class="text-gray-500">Church type</dt><dd>{row.denomination_family || 'Not given'}</dd></div>
+                <div><dt class="text-gray-500">Specific body</dt><dd>{row.denomination_body || 'Not given'}</dd></div>
                 <div><dt class="text-gray-500">Languages</dt><dd>{row.languages_text || 'Not given'}</dd></div>
                 <div><dt class="text-gray-500">From</dt><dd>{row.submitter_name || 'No name'} {row.submitter_email ? `(${row.submitter_email})` : ''}</dd></div>
               </dl>

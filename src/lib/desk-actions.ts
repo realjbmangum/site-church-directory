@@ -1,6 +1,7 @@
 import { patchFromCheck, sanitizePatch, type ChurchPatch } from '@shared/desk';
 import { splitLanguages } from '@shared/languages';
 import { parseServiceTimes } from '@shared/service-times';
+import { familyForType } from '@shared/church-types';
 import { churchSlug, slugify, uniqueSlug } from '@shared/slug';
 import { first } from './db';
 
@@ -94,8 +95,9 @@ export async function approveSubmission(
   if (!sub) return { ok: false, error: 'missing' };
   if (sub.status !== 'waiting') return { ok: false, error: 'already' };
 
-  const family = sub.denomination_family
-    ? await first<{ id: string }>(db, `SELECT id FROM denomination_families WHERE name = ? COLLATE NOCASE`, sub.denomination_family)
+  const familyName = sub.denomination_family ? (familyForType(sub.denomination_family) || sub.denomination_family) : null;
+  const family = familyName
+    ? await first<{ id: string }>(db, `SELECT id FROM denomination_families WHERE name = ? COLLATE NOCASE`, familyName)
     : null;
   const body = sub.denomination_body
     ? await first<{ id: string }>(

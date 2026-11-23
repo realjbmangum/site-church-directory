@@ -3,12 +3,15 @@ import Layout from '../../layouts/Layout.astro';
 import ChurchCard from '../../components/ChurchCard.astro';
 import DatabaseMissing from '../../components/DatabaseMissing.astro';
 import { getDb } from '../../lib/db';
+import { listAttributes, toSearchable } from '../../lib/attributes';
 import { churchesInCity, getCity } from '../../lib/queries';
 
 const db = getDb(Astro.locals);
 const city = db ? await getCity(db, Astro.params.slug ?? '') : null;
 if (db && !city) Astro.response.status = 404;
 const churches = db && city ? await churchesInCity(db, city.id) : [];
+const attributes = db ? await listAttributes(db) : { rows: [], ready: false };
+const byId = new Map(attributes.rows.map((row) => [row.church_id, row]));
 ---
 
 <Layout
@@ -28,7 +31,7 @@ const churches = db && city ? await churchesInCity(db, city.id) : [];
         ) : (
           <div class="card-grid cols-3">
             {churches.map((church) => (
-              <ChurchCard slug={church.slug} name={church.name} familyName={church.family_name} bodyName={church.body_name} city={church.city} state={church.state} sunday={church.earliest_sunday_time} languages={church.languages_text} serviceTimes={church.service_times} photoKey={church.photo_key} historicallyBlack={Boolean(church.historically_black_tradition)} />
+              <ChurchCard slug={church.slug} name={church.name} familyName={toSearchable(church, byId.get(church.id)).typeName} city={church.city} state={church.state} sunday={church.earliest_sunday_time} languages={church.languages_text} serviceTimes={church.service_times} photoKey={church.photo_key} historicallyBlack={Boolean(church.historically_black_tradition)} />
             ))}
           </div>
         )}

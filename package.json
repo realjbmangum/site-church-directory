@@ -11,8 +11,9 @@
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "db:migrate": "wrangler d1 migrations apply church-directory --local --persist-to .wrangler/state",
     "db:seed": "node --experimental-strip-types scripts/seed.ts",
+    "db:seed-filters": "node --experimental-strip-types scripts/seed-attributes.ts",
     "db:geocode": "node --experimental-strip-types scripts/geocode.ts",
-    "db:setup": "npm run db:migrate && npm run db:seed"
+    "db:setup": "npm run db:migrate && npm run db:seed && npm run db:seed-filters"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.12",

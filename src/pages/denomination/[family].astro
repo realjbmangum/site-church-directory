@@ -3,52 +3,51 @@ import Layout from '../../layouts/Layout.astro';
 import ChurchCard from '../../components/ChurchCard.astro';
 import DatabaseMissing from '../../components/DatabaseMissing.astro';
 import { getDb } from '../../lib/db';
-import { churchesInFamily, getFamily, listBodies } from '../../lib/queries';
+import { listAttributes, toSearchable } from '../../lib/attributes';
+import { listOpenChurches } from '../../lib/queries';
+import { churchTypeSlug, LEGACY_FAMILY_SLUGS } from '@shared/church-types';
+import { CHURCH_TYPE_ORDER } from '@shared/church-type-data';
 
 const db = getDb(Astro.locals);
-const family = db ? await getFamily(db, Astro.params.family ?? '') : null;
-if (db && !family) {
-  Astro.response.status = 404;
+const slug = Astro.params.family ?? '';
+if (LEGACY_FAMILY_SLUGS[slug]) {
+  return Astro.redirect(`/denomination/${LEGACY_FAMILY_SLUGS[slug]}`);
 }
-const churches = db && family ? await churchesInFamily(db, family.id) : [];
-const bodies = db && family ? await listBodies(db, family.id) : [];
-const present = bodies.filter((body) => body.church_count > 0);
+const typeName = CHURCH_TYPE_ORDER.find((name) => churchTypeSlug(name) === slug) ?? null;
+if (db && !typeName) Astro.response.status = 404;
+const churches = db ? await listOpenChurches(db) : [];
+const attributes = db ? await listAttributes(db) : { rows: [], ready: false };
+const byId = new Map(attributes.rows.map((row) => [row.church_id, row]));
+const matched = typeName
+  ? churches.filter((church) => toSearchable(church, byId.get(church.id)).typeSlug === slug)
+  : [];
 ---
 
 <Layout
-  title={family?.name ?? 'Denomination'}
-  path={`/denomination/${family?.slug ?? ''}`}
-  description={family ? `${family.name} churches in the Charlotte directory.` : 'Denomination family'}
+  title={typeName ?? 'Church type'}
+  path={`/denomination/${slug}`}
+  description={typeName ? `${typeName} churches in the Charlotte directory.` : 'Church type'}
 >
   {db ? (
-    family ? (
+    typeName ? (
       <div class="page wrap">
-        <nav class="crumbs" aria-label="Breadcrumb"><a href="/denomination">Denominations</a></nav>
-        <h1 style="margin-top: 0.6rem">{family.name}</h1>
-        <p class="lede">{family.church_count} {family.church_count === 1 ? 'church is' : 'churches are'} open in this family.</p>
-        {present.length > 0 && (
-          <div class="chip-row">
-            {present.map((body) => (
-              <a href={`/denomination/${family.slug}/${body.slug}`} class="chip">
-                {body.name} ({body.church_count}){body.historically_black_tradition ? ', Historically Black tradition' : ''}
-              </a>
-            ))}
-          </div>
-        )}
-        {churches.length === 0 ? (
-          <p class="notice">None of the churches in the Charlotte pilot are in this family yet. The family stays in the taxonomy so later cities can use it.</p>
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/denomination">Church types</a></nav>
+        <h1 style="margin-top: 0.6rem">{typeName}</h1>
+        <p class="lede">{matched.length} {matched.length === 1 ? 'church is' : 'churches are'} open in this type.</p>
+        {matched.length === 0 ? (
+          <p class="notice">None of the churches in the Charlotte pilot are this type yet. The type stays in the list so later cities can use it.</p>
         ) : (
           <div class="card-grid cols-3">
-            {churches.map((church) => (
-              <ChurchCard slug={church.slug} name={church.name} familyName={church.family_name} bodyName={church.body_name} city={church.city} state={church.state} sunday={church.earliest_sunday_time} languages={church.languages_text} serviceTimes={church.service_times} photoKey={church.photo_key} historicallyBlack={Boolean(church.historically_black_tradition)} />
+            {matched.map((church) => (
+              <ChurchCard slug={church.slug} name={church.name} familyName={typeName} city={church.city} state={church.state} sunday={church.earliest_sunday_time} languages={church.languages_text} serviceTimes={church.service_times} photoKey={church.photo_key} historicallyBlack={Boolean(church.historically_black_tradition)} />
             ))}
           </div>
         )}
       </div>
     ) : (
       <div class="page wrap">
-        <h1>That denomination family is not in the taxonomy.</h1>
-        <p class="lede"><a class="btn-secondary" href="/denomination">Back to families</a></p>
+        <h1>That church type is not in the list.</h1>
+        <p class="lede"><a class="btn-secondary" href="/denomination">Back to church types</a></p>
       </div>
     )
   ) : <DatabaseMissing />}

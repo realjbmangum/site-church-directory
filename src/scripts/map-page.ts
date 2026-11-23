@@ -1,60 +1,11 @@
 import L from 'leaflet';
-import { TIME_BUCKETS, timeBucket } from '@shared/time';
+import { choiceCount, matchesSearch, readSearchFilters, type SearchableChurch } from '@shared/filters';
 
-export interface MapChurch {
-  slug: string;
-  name: string;
+export interface MapChurch extends SearchableChurch {
   lat: number | null;
   lng: number | null;
-  family: string;
-  familySlug: string;
-  body: string;
-  bodySlug: string;
-  city: string;
-  zip: string;
-  languages: string;
-  minutes: number | null;
   sunday: string;
   address: string;
-}
-
-interface Filters {
-  q: string;
-  family: string;
-  body: string;
-  language: string;
-  place: string;
-  time: string;
-}
-
-function readFilters(params: URLSearchParams): Filters {
-  return {
-    q: params.get('q')?.trim().toLowerCase() ?? '',
-    family: params.get('family') ?? '',
-    body: params.get('body') ?? '',
-    language: params.get('language') ?? '',
-    place: params.get('place')?.trim().toLowerCase() ?? '',
-    time: params.get('time') ?? '',
-  };
-}
-
-function matches(church: MapChurch, filters: Filters): boolean {
-  if (filters.family && church.familySlug !== filters.family) return false;
-  if (filters.body && church.bodySlug !== filters.body) return false;
-  if (filters.language) {
-    const languages = church.languages.toLowerCase().split(';').map((part) => part.trim());
-    if (!languages.includes(filters.language.toLowerCase())) return false;
-  }
-  if (filters.time && timeBucket(church.minutes) !== filters.time) return false;
-  if (filters.place) {
-    const hay = `${church.city} ${church.zip}`.toLowerCase();
-    if (!hay.includes(filters.place)) return false;
-  }
-  if (filters.q) {
-    const hay = `${church.name} ${church.city} ${church.zip} ${church.family} ${church.body}`.toLowerCase();
-    if (!hay.includes(filters.q)) return false;
-  }
-  return true;
 }
 
 export function mountMap(mapEl: HTMLElement, listEl: HTMLElement, countEl: HTMLElement, churches: MapChurch[]): void {
@@ -70,46 +21,25 @@ export function mountMap(mapEl: HTMLElement, listEl: HTMLElement, countEl: HTMLE
     if (church.lat == null || church.lng == null) continue;
     const marker = L.circleMarker([church.lat, church.lng], pinStyle(false));
     marker.bindPopup(
-      `<strong>${escapeHtml(church.name)}</strong><br>${escapeHtml(church.family || 'Denomination not stated')}<br>${escapeHtml(church.sunday || 'Sunday time not listed')}<br><a href="/church/${encodeURIComponent(church.slug)}">Open the listing</a>`,
+      `<strong>${escapeHtml(church.name)}</strong><br>${escapeHtml(church.typeName || 'Church type not listed yet')}<br>${escapeHtml(church.sunday || 'Sunday time not listed')}<br><a href="/church/${encodeURIComponent(church.slug)}">Open the listing</a>`,
     );
     markers.set(church.slug, marker);
   }
 
   const form = document.querySelector<HTMLFormElement>('#map-filters');
-  const bodySelect = document.querySelector<HTMLSelectElement>('#filter-body');
 
-  function currentFilters(): Filters {
-    const data = new FormData(form ?? undefined);
-    return {
-      q: String(data.get('q') ?? '').trim().toLowerCase(),
-      family: String(data.get('family') ?? ''),
-      body: String(data.get('body') ?? ''),
-      language: String(data.get('language') ?? ''),
-      place: String(data.get('place') ?? '').trim().toLowerCase(),
-      time: String(data.get('time') ?? ''),
-    };
-  }
-
-  function syncBodyOptions(family: string) {
-    if (!bodySelect) return;
-    const current = bodySelect.value;
-    for (const option of Array.from(bodySelect.options)) {
-      if (!option.value) {
-        option.hidden = false;
-        continue;
-      }
-      const optionFamily = option.dataset.family ?? '';
-      option.hidden = Boolean(family) && optionFamily !== family;
+  function currentFilters() {
+    const params = new URLSearchParams();
+    const raw = new FormData(form ?? undefined);
+    for (const [key, value] of raw.entries()) {
+      if (typeof value === 'string' && value.trim()) params.append(key, value.trim());
     }
-    const selected = bodySelect.selectedOptions[0];
-    if (selected?.hidden) bodySelect.value = '';
-    else bodySelect.value = current;
+    return readSearchFilters(params);
   }
 
   function render() {
     const filters = currentFilters();
-    syncBodyOptions(filters.family);
-    const visible = churches.filter((church) => matches(church, filters));
+    const visible = churches.filter((church) => matchesSearch(church, filters));
     group.clearLayers();
     for (const church of visible) {
       const marker = markers.get(church.slug);
@@ -127,7 +57,7 @@ export function mountMap(mapEl: HTMLElement, listEl: HTMLElement, countEl: HTMLE
           <span class="schedule-time">${escapeHtml(church.sunday || 'Time not listed')}</span>
           <span>
             <span class="schedule-name">${escapeHtml(church.name)}</span>
-            <span class="schedule-meta">${escapeHtml([church.city, church.family].filter(Boolean).join(', ') || 'Charlotte')}</span>
+            <span class="schedule-meta">${escapeHtml([church.city, church.typeName].filter(Boolean).join(', ') || 'Charlotte')}</span>
             ${pin}
           </span>
         </a>`;
@@ -136,11 +66,19 @@ export function mountMap(mapEl: HTMLElement, listEl: HTMLElement, countEl: HTMLE
     const params = new URLSearchParams();
     const raw = new FormData(form ?? undefined);
     for (const [key, value] of raw.entries()) {
-      if (typeof value === 'string' && value.trim()) params.set(key, value.trim());
+      if (typeof value === 'string' && value.trim()) params.append(key, value.trim());
     }
     const query = params.toString();
     const next = query ? `${window.location.pathname}?${query}` : window.location.pathname;
     window.history.replaceState(null, '', next);
+    document.querySelectorAll<HTMLElement>('.choice-count').forEach((node) => {
+      const key = node.dataset.for || '';
+      const split = key.indexOf(':');
+      if (split < 0) return;
+      const name = key.slice(0, split);
+      const value = key.slice(split + 1);
+      node.textContent = String(choiceCount(churches, filters, name, value));
+    });
   }
 
   function highlight(slug: string | null) {
@@ -200,5 +138,3 @@ function escapeHtml(value: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
-
-export { TIME_BUCKETS };

@@ -2,29 +2,44 @@
 import Layout from '../../layouts/Layout.astro';
 import DatabaseMissing from '../../components/DatabaseMissing.astro';
 import { getDb } from '../../lib/db';
-import { listFamilies } from '../../lib/queries';
+import { listAttributes, toSearchable } from '../../lib/attributes';
+import { listOpenChurches } from '../../lib/queries';
+import { churchTypeSlug } from '@shared/church-types';
+import { CHURCH_TYPE_ORDER } from '@shared/church-type-data';
 
 const db = getDb(Astro.locals);
-const families = db ? await listFamilies(db) : [];
-const withChurches = families.filter((family) => family.church_count > 0);
-const empty = families.filter((family) => family.church_count === 0);
+const churches = db ? await listOpenChurches(db) : [];
+const attributes = db ? await listAttributes(db) : { rows: [], ready: false };
+const byId = new Map(attributes.rows.map((row) => [row.church_id, row]));
+const counts = new Map<string, number>();
+for (const church of churches) {
+  const facts = toSearchable(church, byId.get(church.id));
+  counts.set(facts.typeSlug, (counts.get(facts.typeSlug) ?? 0) + 1);
+}
+const types = CHURCH_TYPE_ORDER.map((name) => ({
+  name,
+  slug: churchTypeSlug(name),
+  count: counts.get(churchTypeSlug(name)) ?? 0,
+}));
+const withChurches = types.filter((type) => type.count > 0);
+const empty = types.filter((type) => type.count === 0);
 ---
 
 <Layout
-  title="Denominations"
+  title="Church types"
   path="/denomination"
-  description="Denomination families in the Charlotte church directory, from Baptist to the bodies whose tradition is not stated."
+  description="Church types in the Charlotte directory, from Baptist to churches whose type is not listed yet."
 >
   {db ? (
     <div class="page wrap">
-      <h1>Denomination families</h1>
-      <p class="lede">The taxonomy has {families.length} families. {withChurches.length} of them have at least one church in this pilot. A family page lists the specific bodies under it.</p>
+      <h1>Church types</h1>
+      <p class="lede">{withChurches.length} church types have at least one open church in this pilot. A type is the plain name. A specific body, when the church states one, is on the church page.</p>
       <ul class="legend legend-split" style="margin-top: 1.5rem">
-        {withChurches.map((family) => (
+        {withChurches.map((type) => (
           <li>
-            <a href={`/denomination/${family.slug}`}>
-              <span>{family.name}</span>
-              <span class="legend-meta">{family.church_count}</span>
+            <a href={`/denomination/${type.slug}`}>
+              <span>{type.name}</span>
+              <span class="legend-meta">{type.count}</span>
             </a>
           </li>
         ))}
@@ -33,8 +48,8 @@ const empty = families.filter((family) => family.church_count === 0);
         <section class="section">
           <h2>No churches in the pilot yet</h2>
           <div class="chip-row">
-            {empty.map((family) => (
-              <a class="chip" href={`/denomination/${family.slug}`}>{family.name}</a>
+            {empty.map((type) => (
+              <a class="chip" href={`/denomination/${type.slug}`}>{type.name}</a>
             ))}
           </div>
         </section>
