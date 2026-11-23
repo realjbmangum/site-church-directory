@@ -186,9 +186,9 @@ export function mountDetail(el: HTMLElement, lat: number, lng: number, name: str
 function pinStyle(active: boolean): L.CircleMarkerOptions {
   return {
     radius: active ? 10 : 7,
-    color: '#08382b',
+    color: active ? '#5c3b1c' : '#1c2430',
     weight: 2,
-    fillColor: active ? '#0d4f3c' : '#1f7356',
+    fillColor: active ? '#8a5a2b' : '#243044',
     fillOpacity: 0.95,
   };
 }

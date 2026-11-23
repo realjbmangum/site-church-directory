@@ -1,0 +1,6 @@
+{
+  "asset": "public/hero/church-*.avif|webp and band-*",
+  "origin": "Generated for Find a Church. Not a photograph of a listed congregation, and not the design mockup.",
+  "license": "Original generated image for this site. Credit on the About page. Do not present it as a photo of a specific church.",
+  "prompt": "Photorealistic wide landscape photograph, no text, no people, no watermark, no UI. A small white wooden country church with a tall dark pointed steeple stands near the horizontal center, slightly left of center, on lush green rolling hills at golden-hour sunrise. The right third is open blue sky and distant trees. The left third is open golden sky, a low sun, and one large tree at the far left edge. Green hills fill the foreground. A small flock of birds is in the upper sky."
+}
