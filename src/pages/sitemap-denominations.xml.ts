@@ -1,25 +1,20 @@
 import type { APIRoute } from 'astro';
-import { all, getDb } from '../lib/db';
 import { canonicalUrl, sitemapDocument, xmlResponse } from '../lib/site';
+import { getDb } from '../lib/db';
+import { listAttributes, toSearchable } from '../lib/attributes';
+import { listOpenChurches } from '../lib/queries';
+import { churchTypeSlug } from '@shared/church-types';
+import { CHURCH_TYPE_ORDER } from '@shared/church-type-data';
 
 export const GET: APIRoute = async ({ locals }) => {
   const db = getDb(locals);
-  const families = db
-    ? await all<{ slug: string }>(db, `SELECT slug FROM denomination_families ORDER BY sort_order`)
-    : [];
-  const bodies = db
-    ? await all<{ family_slug: string; slug: string }>(
-        db,
-        `SELECT f.slug AS family_slug, b.slug AS slug
-         FROM denomination_bodies b
-         JOIN denomination_families f ON f.id = b.family_id
-         WHERE EXISTS (SELECT 1 FROM churches c WHERE c.denomination_body_id = b.id AND c.status = 'open')
-         ORDER BY f.sort_order, b.name`,
-      )
-    : [];
+  const churches = db ? await listOpenChurches(db) : [];
+  const attributes = db ? await listAttributes(db) : { rows: [], ready: false };
+  const byId = new Map(attributes.rows.map((row) => [row.church_id, row]));
+  const used = new Set(churches.map((church) => toSearchable(church, byId.get(church.id)).typeSlug));
+  const types = CHURCH_TYPE_ORDER.filter((name) => used.has(churchTypeSlug(name)));
   return xmlResponse(sitemapDocument([
     { loc: canonicalUrl('/denomination') },
-    ...families.map((row) => ({ loc: canonicalUrl(`/denomination/${row.slug}`) })),
-    ...bodies.map((row) => ({ loc: canonicalUrl(`/denomination/${row.family_slug}/${row.slug}`) })),
+    ...types.map((name) => ({ loc: canonicalUrl(`/denomination/${churchTypeSlug(name)}`) })),
   ]));
 };

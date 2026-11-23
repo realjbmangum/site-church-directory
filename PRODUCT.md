@@ -44,7 +44,7 @@ Visitors search the map (denomination family, then specific body, then language,
 
 ## Brand Commitments
 
-Name: Find a Church. Warm, trustworthy, and welcoming across traditions. Not the stationery of one denomination. Not clip-art crosses, stained glass, or doves. The incumbent cream, terracotta, and Source Serif look is the anti-reference for this redesign.
+Name: Find a Church. Warm, trustworthy, and welcoming across traditions. Not the stationery of one denomination. Not clip-art crosses, stained glass, or doves. The public look is a Sunday-morning photograph: golden light, white cards, Source Serif 4 for titles, Source Sans 3 for reading. The spruce timetable and the terracotta brochure are both retired.
 
 ## Evidence on Hand
 

@@ -1,89 +1,72 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import FilterGroups from '../components/FilterGroups.astro';
 import DatabaseMissing from '../components/DatabaseMissing.astro';
 import { getDb } from '../lib/db';
-import { listBodies, listLanguages, listOpenChurches } from '../lib/queries';
-import { TIME_BUCKETS } from '@shared/time';
+import { listAttributes, toSearchable } from '../lib/attributes';
+import { listOpenChurches } from '../lib/queries';
+import { churchTypeSlug } from '@shared/church-types';
+import { CHURCH_TYPE_ORDER } from '@shared/church-type-data';
+import { filterGroups, matchesSearch, readSearchFilters } from '@shared/filters';
 import 'leaflet/dist/leaflet.css';
 
 const db = getDb(Astro.locals);
 const churches = db ? await listOpenChurches(db) : [];
-const bodies = db ? (await listBodies(db)).filter((body) => body.church_count > 0) : [];
-const languages = db ? await listLanguages(db) : [];
-const params = Astro.url.searchParams;
-const payload = churches.map((church) => ({
-  slug: church.slug,
-  name: church.name,
-  lat: church.latitude,
-  lng: church.longitude,
-  family: church.family_name ?? '',
-  familySlug: church.family_slug ?? '',
-  body: church.body_name ?? '',
-  bodySlug: church.body_slug ?? '',
-  city: church.city ?? '',
-  zip: church.zip ?? '',
-  languages: church.languages_text ?? '',
-  minutes: church.earliest_sunday_minutes,
-  sunday: church.earliest_sunday_time ?? '',
-  address: church.address ?? '',
-}));
-const families = [...new Map(churches.filter((church) => church.family_slug).map((church) => [church.family_slug, church.family_name])).entries()]
-  .map(([slug, name]) => ({ slug: slug as string, name: name as string }))
-  .sort((a, b) => a.name.localeCompare(b.name));
-const noindex = Astro.url.search.length > 1;
+const attributes = db ? await listAttributes(db) : { rows: [], ready: false };
+const byId = new Map(attributes.rows.map((row) => [row.church_id, row]));
+const searchable = churches.map((church) => {
+  const facts = toSearchable(church, byId.get(church.id));
+  return {
+    ...facts,
+    lat: church.latitude,
+    lng: church.longitude,
+    sunday: church.earliest_sunday_time ?? '',
+    address: church.address ?? '',
+  };
+});
+const filters = readSearchFilters(Astro.url.searchParams);
+const visibleCount = searchable.filter((church) => matchesSearch(church, filters)).length;
+const typeCounts = new Map<string, number>();
+for (const church of searchable) typeCounts.set(church.typeSlug, (typeCounts.get(church.typeSlug) ?? 0) + 1);
+const types = CHURCH_TYPE_ORDER.map((name) => ({ name, slug: churchTypeSlug(name), count: typeCounts.get(churchTypeSlug(name)) ?? 0 })).filter((type) => type.count > 0);
+const groups = filterGroups(searchable, filters);
+const selectedType = filters.type;
+const typeLabel = types.find((type) => type.slug === selectedType)?.name;
+const noindex = Boolean(filters.q || filters.place);
+const title = typeLabel ? `${typeLabel} churches` : 'Map';
+const description = typeLabel
+  ? `${typeLabel} churches in the Charlotte area, with service time and the facts each church states on its own site.`
+  : 'Map of churches in the Charlotte area. Filter by church type, service day and time, language, and what the church states on its own site.';
 ---
 
-<Layout
-  title="Map"
-  path="/map"
-  noindex={noindex}
-  description="Map of churches in the Charlotte area. Filter by denomination family, specific body, language, city or ZIP, and Sunday service time."
->
+<Layout title={title} path="/map" noindex={noindex} description={description}>
   {db ? (
     <div class="page wrap">
-      <h1>Map</h1>
-      <p class="lede">Start with a denomination family, then a specific body. After that, narrow by place, language, or Sunday time.</p>
-      <form id="map-filters" class="filter-grid panel">
-        <label>Denomination family
-          <select class="field" name="family" id="filter-family">
-            <option value="">Any family</option>
-            {families.map((family) => (
-              <option value={family.slug} selected={params.get('family') === family.slug}>{family.name}</option>
-            ))}
-          </select>
-        </label>
-        <label>Specific body
-          <select class="field" name="body" id="filter-body">
-            <option value="">Any body</option>
-            {bodies.map((body) => (
-              <option value={body.slug} data-family={body.family_slug} selected={params.get('body') === body.slug}>{body.name}</option>
-            ))}
-          </select>
-        </label>
-        <label>Name, city, or ZIP
-          <input class="field" name="q" value={params.get('q') ?? ''} />
-        </label>
-        <label>City or ZIP
-          <input class="field" name="place" value={params.get('place') ?? ''} placeholder="28205 or Matthews" />
-        </label>
-        <label>Language
-          <select class="field" name="language" id="filter-language">
-            <option value="">Any language</option>
-            {languages.map((language) => (
-              <option value={language.language} selected={params.get('language') === language.language}>{language.language}</option>
-            ))}
-          </select>
-        </label>
-        <label>Sunday service time
-          <select class="field" name="time">
-            <option value="">Any time</option>
-            {TIME_BUCKETS.map((bucket) => (
-              <option value={bucket.id} selected={params.get('time') === bucket.id}>{bucket.label}</option>
-            ))}
-          </select>
-        </label>
+      <h1>{typeLabel ? `${typeLabel} churches` : 'Map'}</h1>
+      <p class="lede">Choose a church type, then any facts the church states on its own site. Inside one group, any selected choice counts. Every group you use has to match.</p>
+      {!attributes.ready && <p class="notice">Ministry and worship filters are not in this database yet. The map still works. Those counts stay at zero until the research is loaded.</p>}
+      <form id="map-filters" class="panel">
+        <div class="filter-grid">
+          <label>Church type
+            <select class="field" name="type">
+              <option value="">Any type</option>
+              {types.map((type) => (
+                <option value={type.slug} selected={selectedType === type.slug}>{type.name} ({type.count})</option>
+              ))}
+            </select>
+          </label>
+          <label>Name, city, or ZIP
+            <input class="field" name="q" value={Astro.url.searchParams.get('q') ?? ''} />
+          </label>
+          <label>City or ZIP
+            <input class="field" name="place" value={Astro.url.searchParams.get('place') ?? ''} placeholder="28205 or Matthews" />
+          </label>
+        </div>
+        <div style="margin-top: 1.15rem">
+          <FilterGroups groups={groups} />
+        </div>
       </form>
-      <p id="map-count" class="count-line">{churches.length} churches</p>
+      <p id="map-count" class="count-line">{visibleCount} {visibleCount === 1 ? 'church' : 'churches'}</p>
       <div class="map-layout">
         <div id="church-map" class="map-frame" role="region" aria-label="Church map"></div>
         <div id="map-list" class="schedule"></div>
@@ -95,7 +78,7 @@ const noindex = Astro.url.search.length > 1;
           ))}
         </ul>
       </noscript>
-      <script id="map-data" type="application/json" set:html={JSON.stringify(payload)}></script>
+      <script id="map-data" type="application/json" set:html={JSON.stringify(searchable).replace(/</g, '\\u003c')}></script>
       <script>
         import { mountMap } from '../scripts/map-page';
         const data = JSON.parse(document.getElementById('map-data')?.textContent || '[]');

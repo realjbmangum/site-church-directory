@@ -1,23 +1,48 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import ChurchCard from '../components/ChurchCard.astro';
+import ScenicPhoto from '../components/ScenicPhoto.astro';
+import FilterGroups from '../components/FilterGroups.astro';
 import DatabaseMissing from '../components/DatabaseMissing.astro';
 import { getDb } from '../lib/db';
-import { listCities, listFamilies, listLanguages, listOpenChurches } from '../lib/queries';
-import { formatChecked, placeLine, snippet } from '../lib/format';
+import { listAttributes, toSearchable } from '../lib/attributes';
+import { listCities, listLanguages, listOpenChurches } from '../lib/queries';
+import { formatChecked, placeLine, serviceLines, snippet } from '../lib/format';
+import { churchTypeSlug } from '@shared/church-types';
+import { CHURCH_TYPE_ORDER } from '@shared/church-type-data';
+import { emptyFilters, filterGroups } from '@shared/filters';
 import { TIME_BUCKETS, timeBucket } from '@shared/time';
 
 const db = getDb(Astro.locals);
 const churches = db ? await listOpenChurches(db) : [];
-const families = db ? (await listFamilies(db)).filter((family) => family.church_count > 0) : [];
+const attributes = db ? await listAttributes(db) : { rows: [], ready: false };
+const byId = new Map(attributes.rows.map((row) => [row.church_id, row]));
+const searchable = churches.map((church) => toSearchable(church, byId.get(church.id)));
+const typeCount = new Map<string, number>();
+for (const church of searchable) typeCount.set(church.typeSlug, (typeCount.get(church.typeSlug) ?? 0) + 1);
+const types = CHURCH_TYPE_ORDER.map((name) => ({
+  name,
+  slug: churchTypeSlug(name),
+  count: typeCount.get(churchTypeSlug(name)) ?? 0,
+})).filter((type) => type.count > 0);
+const groups = filterGroups(searchable, emptyFilters());
 const cities = db ? (await listCities(db)).filter((city) => city.church_count > 0) : [];
 const languages = db ? (await listLanguages(db)).filter((language) => language.language !== 'English') : [];
-const featured = churches.find((church) => church.proof_strength === 'strong' && church.earliest_sunday_time && church.proof_quote)
-  ?? churches.find((church) => church.proof_quote && church.earliest_sunday_time)
-  ?? churches[0];
-const board = churches.filter((church) => church.slug !== featured?.slug && church.earliest_sunday_time).slice(0, 4);
+
+const byTime = churches
+  .filter((church) => church.earliest_sunday_minutes != null && church.earliest_sunday_time)
+  .sort((a, b) => (a.earliest_sunday_minutes ?? 0) - (b.earliest_sunday_minutes ?? 0) || a.name.localeCompare(b.name));
+const featured = byTime[0] ?? churches[0];
+const featuredFacts = featured ? searchable.find((church) => church.slug === featured.slug) : undefined;
+const board = byTime.filter((church) => church.slug !== featured?.slug).slice(0, 3);
 const checked = featured ? formatChecked(featured.date_checked) : null;
-const quote = featured ? snippet(featured.proof_quote, 220) : '';
+
+function serviceInset(raw: string | null | undefined): string {
+  const lines = serviceLines(raw);
+  if (lines) return lines.join(' | ');
+  const clean = (raw ?? '').replace(/\s+/g, ' ').trim();
+  return clean ? snippet(clean, 180) : 'Not listed on the page we checked.';
+}
+
 const buckets = TIME_BUCKETS.map((bucket) => ({
   ...bucket,
   count: churches.filter((church) => timeBucket(church.earliest_sunday_minutes) === bucket.id).length,
@@ -32,128 +57,137 @@ const buckets = TIME_BUCKETS.map((bucket) => ({
   {db ? (
     <>
       <section class="hero">
+        <ScenicPhoto variant="hero" />
+        <div class="hero-scrim" aria-hidden="true"></div>
         <div class="wrap hero-grid">
-          <div>
+          <div class="hero-copy">
             <h1>Find a Sunday service you can check.</h1>
             <p class="lede">
               {churches.length} churches in Charlotte and nearby towns. Each listing keeps a line from the church’s own site, a link to that page, and the date we checked it.
             </p>
-            <form action="/map" method="get" class="search-board">
+            <form id="home-search" action="/map" method="get" class="search-card">
               <label>
                 Name, city, or ZIP
-                <input class="field" type="search" name="q" />
+                <input class="field" type="search" name="q" autocomplete="off" />
               </label>
               <label>
-                Denomination family
-                <select class="field" name="family">
-                  <option value="">Any family</option>
-                  {families.map((family) => <option value={family.slug}>{family.name}</option>)}
+                Church type
+                <select class="field" name="type">
+                  <option value="">Any type</option>
+                  {types.map((type) => <option value={type.slug}>{type.name}</option>)}
                 </select>
               </label>
-              <button class="btn-primary" type="submit">Search the map</button>
+              <button class="btn-secondary" type="submit">Search the map</button>
             </form>
           </div>
           {featured && (
             <article class="proof-panel">
-              <p class="proof-time">{featured.earliest_sunday_time || 'Time not listed'}</p>
+              <h2 class="proof-time">{featured.earliest_sunday_time || 'Time not listed'}</h2>
               <p class="time-caption">Earliest Sunday service</p>
-              <h2 class="proof-name"><a href={`/church/${featured.slug}`}>{featured.name}</a></h2>
-              <p class="meta">{[placeLine(featured), featured.family_name].filter(Boolean).join(' · ')}</p>
-              {quote && <blockquote class="proof-quote">{quote}</blockquote>}
-              <p class="meta" style="margin-top: 0.75rem">
+              <p class="proof-name"><a href={`/church/${featured.slug}`}>{featured.name}</a></p>
+              <p class="meta">{[placeLine(featured), featuredFacts?.typeName].filter(Boolean).join(' · ')}</p>
+              <p class="times-inset">
+                <span class="inset-label">Service times</span>
+                <span aria-hidden="true"> | </span>
+                {serviceInset(featured.service_times)}
+              </p>
+              <p class="meta checked-line">
                 {checked ? `Last checked ${checked}.` : 'Checked against the church website.'}
               </p>
-              <p style="margin-top: 0.9rem"><a class="btn-secondary" href={`/church/${featured.slug}`}>Open the listing</a></p>
+              <p><a class="btn-secondary" href={`/church/${featured.slug}`}>Open the listing</a></p>
             </article>
           )}
         </div>
+
+        {board.length > 0 && (
+          <div class="more-block">
+            <div class="wrap">
+              <div class="section-head on-photo">
+                <h2>More Sunday times</h2>
+                <a href="/map">See all on the map</a>
+              </div>
+              <div class="time-row">
+                {board.map((church) => (
+                  <a class="time-card" href={`/church/${church.slug}`}>
+                    <span class="time-card-time">{church.earliest_sunday_time}</span>
+                    <span class="time-card-name">{church.name}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
-      {board.length > 0 && (
+      <div class="page-rest">
         <section class="section wrap">
-          <div class="section-head">
-            <h2>More Sunday times</h2>
-            <a href="/map">See all on the map</a>
+          <h2>Narrow the list</h2>
+          <p class="quiet">These come from each church's own site. If we did not find it, it is left out. That is not a no. Inside one group, any selected choice counts.</p>
+          <div class="panel" style="margin-top: 1rem">
+            <FilterGroups groups={groups} form="home-search" />
           </div>
-          <div class="card-grid cols-3">
-            {board.map((church) => (
-              <ChurchCard
-                heading="h3"
-                slug={church.slug}
-                name={church.name}
-                familyName={church.family_name}
-                bodyName={church.body_name}
-                city={church.city}
-                state={church.state}
-                serviceTimes={church.service_times}
-                sunday={church.earliest_sunday_time}
-                languages={church.languages_text}
-                photoKey={church.photo_key}
-                historicallyBlack={Boolean(church.historically_black_tradition)}
-              />
-            ))}
-          </div>
+          <p style="margin-top: 1rem"><button class="btn-primary" type="submit" form="home-search">Search the map</button></p>
         </section>
-      )}
 
-      {languages.length > 0 && (
+        {languages.length > 0 && (
+          <section class="section wrap">
+            <h2>Services in another language</h2>
+            <p class="quiet">A church can appear under more than one language. English is the default on most listings.</p>
+            <div class="chip-row">
+              {languages.map((language) => (
+                <a class="chip" href={`/map?language=${encodeURIComponent(language.language)}`}>
+                  {language.language} ({language.church_count})
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
         <section class="section wrap">
-          <h2>Services in another language</h2>
-          <p class="quiet">A church can appear under more than one language. English is the default on most listings.</p>
-          <div class="chip-row">
-            {languages.map((language) => (
-              <a class="chip" href={`/map?language=${encodeURIComponent(language.language)}`}>
-                {language.language} ({language.church_count})
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section class="section wrap">
-        <h2>Browse by denomination family</h2>
-        <p class="quiet">Family is the broad tradition. The church page also names the specific body when we know it.</p>
-        <ul class="legend legend-split" style="margin-top: 1rem">
-          {families.map((family) => (
-            <li>
-              <a href={`/denomination/${family.slug}`}>
-                <span>{family.name}</span>
-                <span class="legend-meta">{family.church_count}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section class="section wrap split">
-        <div>
-          <h2>Towns in the pilot</h2>
-          <ul class="legend" style="margin-top: 1rem">
-            {cities.map((city) => (
+          <h2>Browse by church type</h2>
+          <p class="quiet">Church type is the plain name, such as Baptist or Catholic. The church page names a specific body only when the church states one.</p>
+          <ul class="legend legend-split">
+            {types.map((type) => (
               <li>
-                <a href={`/city/${city.slug}`}>
-                  <span>{city.name}</span>
-                  <span class="legend-meta">{city.church_count}</span>
+                <a href={`/denomination/${type.slug}`}>
+                  <span>{type.name}</span>
+                  <span class="legend-meta">{type.count}</span>
                 </a>
               </li>
             ))}
           </ul>
-        </div>
-        <div>
-          <h2>Sunday start times we could read</h2>
-          <ul class="legend" style="margin-top: 1rem">
-            {buckets.map((bucket) => (
-              <li>
-                <a href={`/map?time=${bucket.id}`}>
-                  <span>{bucket.label}</span>
-                  <span class="legend-meta">{bucket.count}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-          <p class="quiet" style="margin-top: 0.9rem">Times come from the church site. When a page did not state a clear Sunday start, the listing says so.</p>
-        </div>
-      </section>
+        </section>
+
+        <section class="section wrap split">
+          <div>
+            <h2>Towns in the pilot</h2>
+            <ul class="legend">
+              {cities.map((city) => (
+                <li>
+                  <a href={`/city/${city.slug}`}>
+                    <span>{city.name}</span>
+                    <span class="legend-meta">{city.church_count}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h2>Sunday start times we could read</h2>
+            <ul class="legend">
+              {buckets.map((bucket) => (
+                <li>
+                  <a href={`/map?time=${bucket.id}`}>
+                    <span>{bucket.label}</span>
+                    <span class="legend-meta">{bucket.count}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <p class="quiet" style="margin-top: 0.9rem">Times come from the church site. When a page did not state a clear Sunday start, the listing says so.</p>
+          </div>
+        </section>
+      </div>
     </>
   ) : <DatabaseMissing />}
 </Layout>

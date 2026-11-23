@@ -1,0 +1,27 @@
+---
+import type { FilterGroup } from '@shared/filters';
+
+interface Props {
+  groups: FilterGroup[];
+  form?: string;
+}
+
+const { groups, form } = Astro.props;
+---
+
+<div class="filter-groups">
+  {groups.map((group) => (
+    <fieldset class="filter-group">
+      <legend>{group.legend}</legend>
+      <div class="chip-row">
+        {group.choices.map((choice) => (
+          <label class="filter-choice">
+            <input type="checkbox" name={choice.name} value={choice.value} checked={choice.checked} form={form} />
+            <span>{choice.label}</span>
+            <span class="choice-count" data-for={`${choice.name}:${choice.value}`}>{choice.count}</span>
+          </label>
+        ))}
+      </div>
+    </fieldset>
+  ))}
+</div>

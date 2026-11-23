@@ -1,14 +1,16 @@
 interface Row {
   name: string;
   slug: string;
-  family: string;
-  body: string;
+  type: string;
   city: string;
   zip: string;
   languages: string;
   sunday: string;
-  proof: string;
+  worship: string;
+  outreach: string;
 }
+
+const KEYS: (keyof Row)[] = ['name', 'type', 'city', 'zip', 'languages', 'sunday', 'worship', 'outreach'];
 
 export function mountTable(table: HTMLTableElement, rows: Row[]): void {
   const tbody = table.querySelector('tbody');
@@ -19,31 +21,26 @@ export function mountTable(table: HTMLTableElement, rows: Row[]): void {
   let sortKey: keyof Row = 'name';
   let direction = 1;
 
+  function cell(row: Row, key: keyof Row): string {
+    if (key === 'name') return `<a href="/church/${encodeURIComponent(row.slug)}">${escapeHtml(row.name)}</a>`;
+    if (key === 'sunday') return escapeHtml(row.sunday || 'Not listed');
+    return escapeHtml(row[key] || '');
+  }
+
   function draw() {
     const q = filter?.value.trim().toLowerCase() ?? '';
-    const familyValue = family?.value ?? '';
+    const typeValue = family?.value ?? '';
     const cityValue = city?.value ?? '';
     const visible = rows
       .filter((row) => {
-        if (familyValue && row.family !== familyValue) return false;
+        if (typeValue && row.type !== typeValue) return false;
         if (cityValue && row.city !== cityValue) return false;
         if (!q) return true;
         return Object.values(row).join(' ').toLowerCase().includes(q);
       })
       .sort((a, b) => a[sortKey].localeCompare(b[sortKey]) * direction);
     tbody.innerHTML = visible
-      .map(
-        (row) => `<tr>
-          <td><a href="/church/${encodeURIComponent(row.slug)}">${escapeHtml(row.name)}</a></td>
-          <td>${escapeHtml(row.family)}</td>
-          <td>${escapeHtml(row.body)}</td>
-          <td>${escapeHtml(row.city)}</td>
-          <td>${escapeHtml(row.zip)}</td>
-          <td>${escapeHtml(row.languages)}</td>
-          <td>${escapeHtml(row.sunday || 'Not listed')}</td>
-          <td>${escapeHtml(row.proof)}</td>
-        </tr>`,
-      )
+      .map((row) => `<tr>${KEYS.map((key) => `<td>${cell(row, key)}</td>`).join('')}</tr>`)
       .join('');
     const count = document.querySelector('#table-count');
     if (count) count.textContent = `${visible.length} ${visible.length === 1 ? 'church' : 'churches'}`;

@@ -41,7 +41,7 @@ const Heading = heading;
   <div>
     <Heading class="stop-name">{name}</Heading>
     <p class="stop-place">{placeLine({ city, state })}</p>
-    <p class="stop-meta">{[familyName || 'Denomination not stated', bodyName].filter(Boolean).join(' · ')}</p>
+    <p class="stop-meta">{familyName || 'Church type not listed yet'}</p>
     {!sunday && line && <p class="stop-meta">{line}</p>}
     {(historicallyBlack || (languages && languages !== 'English')) && (
       <p class="chip-row" style="margin-top: 0.55rem">
